@@ -1,0 +1,11 @@
+Voici comment procéder pour tester votre compilateur que je nommerai "structit".
+Le compilateur structit que vous devrez programmer prendrait comme entrée un fichier écrit en langage STRUCIT-frontend tel décrit par le sujet du projet. Les fichiers C dans ce répertoire contiennent des exemples de tests.
+
+Je prend l'exemple add.c
+Votre compilateur compilera add.c et devra générer un code STRUCTIT-backend (tel expliqué dans le sujet du projet). Le fichier ainsi généré se nommera add_3.c par exemple.
+
+Ensuite, utilisez le parseur structit_backend pour tester si le code add_3.c  est correct lexicalement et syntaiquement (pas de vérification sémantique demandée dans le parseur du backend, seule une vérification manuelle sera faite.)
+
+
+Bon travail.
+S.T.
