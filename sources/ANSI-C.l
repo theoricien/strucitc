@@ -3,7 +3,7 @@
 #include "y.tab.h"
 
 
-/* Ne gère pas les commentaires. A rajouter */
+/* Ne gere pas les commentaires. A rajouter */
 /* Supprimer les lignes dont vous n'avez pas besoin. */
 
 %}
@@ -16,38 +16,51 @@ FS                      (f|F|l|L)
 IS                      (u|U|l|L)*
 
 %%
-"extern"                { /* A completer */ }
-"if"                    { /* A completer */ }
-"else"                  { /* A completer */ }
-"goto"                  { /* A completer */ }
-"while"                 { /* A completer */ }
-"for"                   { /* A completer */ }
-"int"                   { /* A completer */ }
-"void"                  { /* A completer */ }
-"return"                { /* A completer */ }
-"struct"                { /* A completer */ }
-"sizeof"                { /* A completer */ }
+"extern"                {return EXTERN;}
+"if"                    {return IF;}
+"else"                  {return ELSE;}
+"while"                 {return WHILE;}
+"for"                   {return FOR;}
+"int"                   {return INT;}
+"void"                  {return VOID;}
+"return"                {return RETURN;}
+"sizeof"                {return SIZEOF;}
 
-{L}({L}|{D})*           { /* IDENTIFICATEUR */ }
+{L}({L}|{D})*           {return IDENTIFIER;}
 
-0[xX]{H}+{IS}?          { /* HEXA: 0xbabeb33f */ }
-0{D}+{IS}?              { /* int */ }
-{D}+{IS}?               { /* int: 546LLLLLuUuuULlL */ }
-L?'(\\.|[^\\'])+'       { /* chelou */ }
+0[xX]{H}+{IS}?          {return CONSTANT; /* HEX */}
+0{D}+{IS}?              {return CONSTANT; /* DEC */}
+{D}+{IS}?               {return CONSTANT; /* DEC */}
+L?'(\\.|[^\\'])+'       {; /* chelou */ }
 
-{D}+{E}{FS}?            { /* big int: 5e+88 */ }
-{D}*"."{D}+({E})?{FS}?  { /* flottant chelou: .588E-8 */ }
-{D}+"."{D}*({E})?{FS}?  { /* flottant chelou 2: 184.L */ }
+{D}+{E}{FS}?            {return CONSTANT; /* BIG INT */}
+{D}*"."{D}+({E})?{FS}?  {return CONSTANT; /* flottant chelou: .588E-8 */ }
+{D}+"."{D}*({E})?{FS}?  {return CONSTANT; /* flottant chelou 2: 184.L */ }
 
-L?\"(\\.|[^\\"])*\"     { /* A completer */ }
+L?\"(\\.|[^\\"])*\"     {; /* A completer */ }
 
-"<="                    { /* A completer */ }
-">="                    { /* A completer */ }
-">"                     { /* A completer */ }
-"<"                     { /* A completer */ }
-"=="                    { /* A completer */ }
-"!="                    { /* A completer */ }
+"<="                    {return LE_OP;}
+">="                    {return GE_OP;}
+">"                     {return GE_OP; /* A completer */ }
+"<"                     {return LE_OP; /* A completer */ }
+"=="                    {return EQ_OP;}
+"!="                    {return NE_OP;}
 
-[ \t\v\n\f]             { /* A completer */ }
-.                       { /*le ; j'imagine */  return yytext[0]; }
+"&&"                    {return AND_OP;}
+"||"                    {return OR_OP;}
+
+[ \t\v\n\f]             {; /* NE RIEN FAIRE */}
+.                       {return yytext[0];}
 %%
+
+void
+yyerror (char* s)
+{
+    fprintf(stderr, "%s", s);
+}
+
+int
+main (void)
+{
+    yylex();
+}

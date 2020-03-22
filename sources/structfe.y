@@ -1,3 +1,7 @@
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
 %token IDENTIFIER CONSTANT SIZEOF
 %token PTR_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP
@@ -194,3 +198,15 @@ function_definition
 
 %%
 
+void 
+yyerror (char const *s) 
+{
+   fprintf (stderr, "%s\n", s);
+}
+
+int
+main (void)
+{
+   yyparse();
+   return 0;
+}
