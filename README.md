@@ -6,7 +6,7 @@ Projet de compilation - L3 Informatique UCA
 git clone https://github.com/theoricien/strucitc
 ```
 ## Install the requirements
-`̀ `
+```
 make install
 ```
 ## How to use
