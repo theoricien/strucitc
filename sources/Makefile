@@ -5,7 +5,7 @@ EXEC=strucitfe
 all: $(EXEC)
 
 strucitfe: lex.yy.c y.tab
-	$(CC) -o strucitfe lex.yy.c y.tab.c $(CFLAGS)
+	$(CC) -o $(EXEC) lex.yy.c y.tab.c $(CFLAGS)
 
 lex.yy.c:
 	flex ANSI-C.l
@@ -17,3 +17,7 @@ y.tab:
 
 clean:
 	rm y.tab.c lex.yy.c y.tab.h
+
+tests:
+	chmod +x ./mktests.sh
+	./mktests.sh

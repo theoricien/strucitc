@@ -3,7 +3,8 @@
 #include <stdlib.h>
 %}
 %token IDENTIFIER CONSTANT SIZEOF
-%token PTR_OP LE_OP GE_OP EQ_OP NE_OP
+%token PTR_OP LE_OP GE_OP L_OP G_OP EQ_OP NE_OP
+%token RB_OP LB_OP
 %token AND_OP OR_OP
 %token EXTERN
 %token INT VOID
@@ -58,8 +59,8 @@ additive_expression
 
 relational_expression
         : additive_expression
-        | relational_expression '<' additive_expression
-        | relational_expression '>' additive_expression
+        | relational_expression L_OP additive_expression
+        | relational_expression G_OP additive_expression
         | relational_expression LE_OP additive_expression
         | relational_expression GE_OP additive_expression
         ;
@@ -80,9 +81,15 @@ logical_or_expression
         | logical_or_expression OR_OP logical_and_expression
         ;
 
+binary_expression
+        : logical_or_expression RB_OP logical_or_expression
+        | logical_or_expression LB_OP logical_or_expression
+        ;
+
 expression
         : logical_or_expression
         | unary_expression '=' expression
+        | binary_expression
         ;
 
 declaration
@@ -197,8 +204,22 @@ function_definition
         ;
 
 %%
+
+extern FILE *yyin;
+
 void
 yyerror (char const *s)
 {
 	fprintf(stderr, "%s\n", s);
+}
+
+int
+main (int argc, char *argv[])
+{
+	if ((yyin = fopen(argv[1], "r")) == NULL)
+	{
+		yyerror("[E] File not found\n");
+	}
+	yyparse();
+	return 0;
 }
