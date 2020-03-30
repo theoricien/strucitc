@@ -197,16 +197,8 @@ function_definition
         ;
 
 %%
-
-void 
-yyerror (char const *s) 
+void
+yyerror (char const *s)
 {
-   fprintf (stderr, "%s\n", s);
-}
-
-int
-main (void)
-{
-   yyparse();
-   return 0;
+	fprintf(stderr, "%s\n", s);
 }

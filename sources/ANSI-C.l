@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "y.tab.h"
 
-
 /* Ne gere pas les commentaires. A rajouter */
 /* Supprimer les lignes dont vous n'avez pas besoin. */
 
@@ -52,15 +51,3 @@ L?\"(\\.|[^\\"])*\"     {; /* A completer */ }
 [ \t\v\n\f]             {; /* NE RIEN FAIRE */}
 .                       {return yytext[0];}
 %%
-
-void
-yyerror (char* s)
-{
-    fprintf(stderr, "%s", s);
-}
-
-int
-main (void)
-{
-    yylex();
-}
