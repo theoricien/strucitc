@@ -4,6 +4,7 @@
 %}
 %token IDENTIFIER CONSTANT SIZEOF
 %token PTR_OP LE_OP GE_OP L_OP G_OP EQ_OP NE_OP
+%token INC_OP DEC_OP
 %token RB_OP LB_OP
 %token AND_OP OR_OP
 %token EXTERN
@@ -26,8 +27,6 @@ postfix_expression
         | postfix_expression '(' argument_expression_list ')'
         | postfix_expression '.' IDENTIFIER
         | postfix_expression PTR_OP IDENTIFIER
-        | postfix_expression '+' '+'
-        | postfix_expression '-' '-'
         ;
 
 argument_expression_list
@@ -56,6 +55,8 @@ multiplicative_expression
 
 additive_expression
         : multiplicative_expression
+	| additive_expression INC_OP
+	| additive_expression DEC_OP
         | additive_expression '+' multiplicative_expression
         | additive_expression '-' multiplicative_expression
         ;

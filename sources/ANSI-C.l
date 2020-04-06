@@ -51,6 +51,9 @@ L?'(\\.|[^\\'])+'       {log("chelou 1");; /* chelou */ }
 
 L?\"(\\.|[^\\"])*\"     {log("chelou 2"); /* A completer */ }
 
+"++"                    {log("++");return INC_OP;}
+"--"                    {log("--");return DEC_OP;}
+
 ">>"                    {log("RB_OP");return RB_OP;}
 "<<"                    {log("LB_OP");return LB_OP;}
 
