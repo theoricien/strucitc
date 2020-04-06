@@ -26,6 +26,8 @@ postfix_expression
         | postfix_expression '(' argument_expression_list ')'
         | postfix_expression '.' IDENTIFIER
         | postfix_expression PTR_OP IDENTIFIER
+        | postfix_expression '+' '+'
+        | postfix_expression '-' '-'
         ;
 
 argument_expression_list
@@ -36,7 +38,8 @@ argument_expression_list
 unary_expression
         : postfix_expression
         | unary_operator unary_expression
-        | SIZEOF unary_expression
+        | SIZEOF '(' type_specifier ')'
+        | SIZEOF '(' expression ')'
         ;
 
 unary_operator

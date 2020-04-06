@@ -28,6 +28,7 @@ COMMENTAIRE_POLY        [\/][*][^*]*[*]+([^*\/][^*]*[*]+)*[\/]
 {COMMENTAIRE_POLY}      ;
 
 "extern"                {log("extern");return EXTERN;}
+"struct"                {log("struct");return STRUCT;}
 "if"                    {log("if");return IF;}
 "else"                  {log("else");return ELSE;}
 "while"                 {log("while");return WHILE;}
@@ -59,6 +60,8 @@ L?\"(\\.|[^\\"])*\"     {log("chelou 2"); /* A completer */ }
 "<"                     {log("L_OP");return L_OP;}
 "=="                    {log("EQ_OP");return EQ_OP;}
 "!="                    {log("NE_OP");return NE_OP;}
+
+"->"                    {log("PTR_OP");return PTR_OP;}
 
 "&&"                    {log("AND_OP");return AND_OP;}
 "||"                    {log("OR_OP");return OR_OP;}

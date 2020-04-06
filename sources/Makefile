@@ -16,7 +16,7 @@ y.tab:
 	mv structfe.tab.c y.tab.c
 
 clean:
-	rm y.tab.c lex.yy.c y.tab.h
+	rm y.tab.c lex.yy.c y.tab.h strucitfe
 
 tests:
 	chmod +x ./mktests.sh
