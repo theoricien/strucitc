@@ -1,0 +1,4 @@
+
+front-end/Syntax-Analyser/src/lex.yy.c
+front-end/Syntax-Analyser/src/y.tab.c
+front-end/Syntax-Analyser/src/y.tab.h
