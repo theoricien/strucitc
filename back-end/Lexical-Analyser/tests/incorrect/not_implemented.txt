@@ -1,0 +1,10 @@
+#define macro macro
+#pragma
+#ifdef
+#ifndef
+!strcmp("aa", "bb");
+utf_8_châràctérs
+3.14
+0xdeadbeef
+0x41414141
+0xc4f3b4b3

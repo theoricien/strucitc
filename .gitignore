@@ -2,3 +2,5 @@
 front-end/Syntax-Analyser/src/lex.yy.c
 front-end/Syntax-Analyser/src/y.tab.c
 front-end/Syntax-Analyser/src/y.tab.h
+back-end/Lexical-Analyser/src/.ANSI-C.l.swp
+back-end/Lexical-Analyser/src/lex.yy.c
