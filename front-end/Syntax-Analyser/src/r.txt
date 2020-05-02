@@ -1,0 +1,12 @@
+structfe.y: warning: 1 shift/reduce conflict [-Wconflicts-sr]
+ANSI-C.l:6:6: warning: conflicting types for built-in function ‘log’ [-Wbuiltin-declaration-mismatch]
+ void log (char *msg)
+      ^~~
+structfe.tab.c: In function ‘yyparse’:
+structfe.tab.c:1285:16: warning: implicit declaration of function ‘yylex’ [-Wimplicit-function-declaration]
+structfe.tab.c:1414:7: warning: implicit declaration of function ‘yyerror’; did you mean ‘yyerrok’? [-Wimplicit-function-declaration]
+structfe.y: At top level:
+structfe.y:213:1: warning: conflicting types for ‘yyerror’
+ yyerror (char const *s)
+ ^~~~~~~
+structfe.tab.c:1414:7: note: previous implicit declaration of ‘yyerror’ was here
