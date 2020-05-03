@@ -9,7 +9,7 @@
 %token AND_OP OR_OP
 %token EXTERN
 %token INT VOID
-%token STRUCT 
+%token STRUCT
 %token IF ELSE WHILE FOR RETURN
 
 %start program
@@ -55,8 +55,6 @@ multiplicative_expression
 
 additive_expression
         : multiplicative_expression
-	| additive_expression INC_OP
-	| additive_expression DEC_OP
         | additive_expression '+' multiplicative_expression
         | additive_expression '-' multiplicative_expression
         ;
@@ -153,7 +151,7 @@ statement
         | expression_statement
         | selection_statement
         | iteration_statement
-        | jump_statement 
+        | jump_statement
         ;
 
 compound_statement
