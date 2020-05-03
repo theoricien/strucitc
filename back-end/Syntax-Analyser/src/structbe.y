@@ -1,5 +1,10 @@
-%token IDENTIFIER CONSTANT 
-%token LE_OP GE_OP EQ_OP NE_OP
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+
+%token IDENTIFIER CONSTANT
+%token LE_OP GE_OP EQ_OP NE_OP L_OP G_OP
 %token EXTERN
 %token INT VOID
 %token IF RETURN GOTO
@@ -48,8 +53,8 @@ additive_expression
 
 relational_expression
         : additive_expression
-        | primary_expression '<' primary_expression
-        | primary_expression '>' primary_expression
+        | primary_expression G_OP primary_expression
+        | primary_expression L_OP primary_expression
         | primary_expression LE_OP primary_expression
         | primary_expression GE_OP primary_expression
         ;
@@ -80,6 +85,11 @@ type_specifier
         | INT
         ;
 
+argument_types
+        : VOID '*'
+        | INT
+        ;
+
 declarator
         : '*' direct_declarator
         | direct_declarator
@@ -105,7 +115,7 @@ statement
         | labeled_statement
         | expression_statement
         | selection_statement
-        | jump_statement 
+        | jump_statement
         ;
 
 compound_statement
@@ -159,3 +169,25 @@ function_definition
 
 %%
 
+extern FILE *yyin;
+
+void
+yyerror (char const *s)
+{
+	fprintf(stderr, "%s\n", s);
+	exit(2);
+}
+
+int
+main (int argc, char *argv[])
+{
+	if ((yyin = fopen(argv[1], "r")) == NULL)
+	{
+		yyerror("[E] File not found\n");
+		exit(2);
+	} else {
+		yyparse();
+		printf("Success.\n");
+	}
+	return 0;
+}

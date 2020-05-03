@@ -1,12 +1,12 @@
 #!/bin/bash
-if [ -f "strucitfe" ]
+if [ -f "strucitbe" ]
 then
 	echo "--- CORRECT TESTS ---"
 	for file in $(ls ../tests/correct/)
 	do
 		echo "-----------------------"
 		echo $file
-		./strucitfe ../tests/correct/$file
+		./strucitbe ../tests/correct/$file
 	done
 	echo "--- INCORRECT TESTS ---"
 
@@ -14,8 +14,7 @@ then
         do
                 echo "-----------------------"
                 echo $file
-                ./strucitfe ../tests/incorrect/$file
+                ./strucitbe ../tests/incorrect/$file
         done
         echo "-----------------------"
 fi
-

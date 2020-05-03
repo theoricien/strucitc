@@ -1,22 +1,22 @@
 CC=gcc
 CFLAGS=-ll -lfl
-EXEC=strucitfe
+EXEC=strucitbe
 
 all: $(EXEC)
 
-strucitfe: lex.yy.c y.tab
+strucitbe: lex.yy.c y.tab
 	$(CC) -o $(EXEC) lex.yy.c y.tab.c $(CFLAGS)
 
 lex.yy.c:
 	flex ANSI-C.l
 
 y.tab:
-	bison -d structfe.y
-	mv structfe.tab.h y.tab.h
-	mv structfe.tab.c y.tab.c
+	bison -d structbe.y
+	mv structbe.tab.h y.tab.h
+	mv structbe.tab.c y.tab.c
 
 clean:
-	rm y.tab.c lex.yy.c y.tab.h strucitfe
+	rm y.tab.c lex.yy.c y.tab.h strucitbe
 
 tests:
 	chmod +x ./mktests.sh
