@@ -12,20 +12,25 @@ struct node_t *build_leaf(type_t type, char* value){
   struct node_t *tmp = (struct node_t *)malloc(sizeof (struct node_t));
   assert (tmp != NULL);
 
+
   tmp->type = type;
 
   tmp->leaf = (struct pexpr_t *)malloc(sizeof (struct pexpr_t));
   assert (tmp->leaf != NULL);
 
+
   tmp->leaf->value = (char *)malloc(strlen (value) + 1);
   assert (tmp->leaf->value != NULL);
-  strncpy(tmp->leaf->value, value, strlen(value) + 1);
+  strcpy(tmp->leaf->value, value);
+
 
   return tmp;
 
 }
 
 struct node_t *build_opr(char op, struct node_t *left, struct node_t *right){
+
+  printf("entering build_opr \n");
 
   struct node_t *tmp = (struct node_t *)malloc(sizeof (struct node_t));
   assert (tmp != NULL);

@@ -78,12 +78,13 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 8 "structfe.y" /* yacc.c:1909  */
+#line 16 "structfe.y" /* yacc.c:1909  */
 
   node_t *node;
   char *string;
+  char uop;
 
-#line 87 "structfe.tab.h" /* yacc.c:1909  */
+#line 88 "structfe.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
