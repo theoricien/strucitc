@@ -1,172 +1,50 @@
-structfe.y:195.11-14: warning: type clash on default action: <node> != <> [-Wother]
-         : VOID
-           ^^^^
-structfe.y:196.11-13: warning: type clash on default action: <node> != <> [-Wother]
-         | INT
-           ^^^
-structfe.y:201.11-59: warning: type clash on default action: <node> != <> [-Wother]
+structfe.y:247.11-59: warning: type clash on default action: <node> != <> [-Wother]
          : STRUCT IDENTIFIER '{' struct_declaration_list '}'
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:202.11-48: warning: type clash on default action: <node> != <> [-Wother]
+structfe.y:248.11-48: warning: type clash on default action: <node> != <> [-Wother]
          | STRUCT '{' struct_declaration_list '}'
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:203.11-27: warning: type clash on default action: <node> != <> [-Wother]
+structfe.y:249.11-27: warning: type clash on default action: <node> != <> [-Wother]
          | STRUCT IDENTIFIER
            ^^^^^^^^^^^^^^^^^
-structfe.y:224.11-20: warning: type clash on default action: <node> != <string> [-Wother]
-         : IDENTIFIER
-           ^^^^^^^^^^
-structfe.y:225.11-28: warning: type clash on default action: <node> != <> [-Wother]
+structfe.y:273.11-28: warning: type clash on default action: <node> != <> [-Wother]
          | '(' declarator ')'
            ^^^^^^^^^^^^^^^^^^
-structfe.y:248.11-17: warning: type clash on default action: <node> != <> [-Wother]
+structfe.y:296.11-17: warning: type clash on default action: <node> != <> [-Wother]
          : '{' '}'
            ^^^^^^^
-structfe.y:249.11-32: warning: type clash on default action: <node> != <> [-Wother]
-         | '{' statement_list '}'
-           ^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:250.11-34: warning: type clash on default action: <node> != <> [-Wother]
-         | '{' declaration_list '}'
-           ^^^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:251.11-49: warning: type clash on default action: <node> != <> [-Wother]
-         | '{' declaration_list statement_list '}'
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:265.11-13: warning: type clash on default action: <node> != <> [-Wother]
+structfe.y:318.11-13: warning: type clash on default action: <node> != <> [-Wother]
          : ';'
            ^^^
-structfe.y:271.11-41: warning: type clash on default action: <node> != <> [-Wother]
-         : IF '(' expression ')' statement
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:272.11-56: warning: type clash on default action: <node> != <> [-Wother]
-         | IF '(' expression ')' statement ELSE statement
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:276.11-44: warning: type clash on default action: <node> != <> [-Wother]
-         : WHILE '(' expression ')' statement
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:277.11-84: warning: type clash on default action: <node> != <> [-Wother]
-         | FOR '(' expression_statement expression_statement expression ')' statement
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:281.11-20: warning: type clash on default action: <node> != <> [-Wother]
-         : RETURN ';'
-           ^^^^^^^^^^
-structfe.y:282.11-31: warning: type clash on default action: <node> != <> [-Wother]
-         | RETURN expression ';'
-           ^^^^^^^^^^^^^^^^^^^^^
 structfe.y: warning: 1 shift/reduce conflict [-Wconflicts-sr]
 ANSI-C.l:6:6: warning: conflicting types for built-in function ‘log’ [-Wbuiltin-declaration-mismatch]
  void log (char *msg)
       ^~~
+structfe.y:9:6: warning: conflicting types for built-in function ‘log2’ [-Wbuiltin-declaration-mismatch]
+ void log2 (char *msg)
+      ^~~~
 structfe.tab.c: In function ‘yyparse’:
-structfe.tab.c:1298:16: warning: implicit declaration of function ‘yylex’ [-Wimplicit-function-declaration]
-structfe.y:93:32: warning: passing argument 1 of ‘build_uopr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_uopr($1,$2);}
-                                ^
-In file included from <command-line>:32:0:
-./tree.h:53:9: note: expected ‘char’ but argument is of type ‘node_t * {aka struct node_t *}’
- node_t *build_uopr(char, node_t *);
-         ^~~~~~~~~~
-structfe.y:115:19: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
-         : '&'                         {$$ = "&";}
-                   ^
-structfe.y:116:19: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
-         | '*'                         {$$ = "*";}
-                   ^
-structfe.y:117:19: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
-         | '-'                         {$$ = "-";}
-                   ^
-structfe.y:139:31: warning: passing argument 1 of ‘build_opr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_opr($2,$1,$3);}
-                               ^
-In file included from <command-line>:32:0:
-./tree.h:52:9: note: expected ‘char’ but argument is of type ‘char *’
- node_t *build_opr(char, node_t*, node_t*);
-         ^~~~~~~~~
-structfe.y:141:31: warning: passing argument 1 of ‘build_opr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_opr($2,$1,$3);}
-                               ^
-In file included from <command-line>:32:0:
-./tree.h:52:9: note: expected ‘char’ but argument is of type ‘char *’
- node_t *build_opr(char, node_t*, node_t*);
-         ^~~~~~~~~
-structfe.y:143:31: warning: passing argument 1 of ‘build_opr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_opr($2,$1,$3);}
-                               ^
-In file included from <command-line>:32:0:
-./tree.h:52:9: note: expected ‘char’ but argument is of type ‘char *’
- node_t *build_opr(char, node_t*, node_t*);
-         ^~~~~~~~~
-structfe.y:145:31: warning: passing argument 1 of ‘build_opr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_opr($2,$1,$3);}
-                               ^
-In file included from <command-line>:32:0:
-./tree.h:52:9: note: expected ‘char’ but argument is of type ‘char *’
- node_t *build_opr(char, node_t*, node_t*);
-         ^~~~~~~~~
-structfe.y:151:31: warning: passing argument 1 of ‘build_opr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_opr($2,$1,$3);}
-                               ^
-In file included from <command-line>:32:0:
-./tree.h:52:9: note: expected ‘char’ but argument is of type ‘char *’
- node_t *build_opr(char, node_t*, node_t*);
-         ^~~~~~~~~
-structfe.y:153:31: warning: passing argument 1 of ‘build_opr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_opr($2,$1,$3);}
-                               ^
-In file included from <command-line>:32:0:
-./tree.h:52:9: note: expected ‘char’ but argument is of type ‘char *’
- node_t *build_opr(char, node_t*, node_t*);
-         ^~~~~~~~~
-structfe.y:159:31: warning: passing argument 1 of ‘build_opr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_opr($2,$1,$3);}
-                               ^
-In file included from <command-line>:32:0:
-./tree.h:52:9: note: expected ‘char’ but argument is of type ‘char *’
- node_t *build_opr(char, node_t*, node_t*);
-         ^~~~~~~~~
-structfe.y:165:31: warning: passing argument 1 of ‘build_opr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_opr($2,$1,$3);}
-                               ^
-In file included from <command-line>:32:0:
-./tree.h:52:9: note: expected ‘char’ but argument is of type ‘char *’
- node_t *build_opr(char, node_t*, node_t*);
-         ^~~~~~~~~
-structfe.y:170:31: warning: passing argument 1 of ‘build_opr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_opr($2,$1,$3);}
-                               ^
-In file included from <command-line>:32:0:
-./tree.h:52:9: note: expected ‘char’ but argument is of type ‘char *’
- node_t *build_opr(char, node_t*, node_t*);
-         ^~~~~~~~~
-structfe.y:172:31: warning: passing argument 1 of ‘build_opr’ makes integer from pointer without a cast [-Wint-conversion]
-                                       {$$ = build_opr($2,$1,$3);}
-                               ^
-In file included from <command-line>:32:0:
-./tree.h:52:9: note: expected ‘char’ but argument is of type ‘char *’
- node_t *build_opr(char, node_t*, node_t*);
-         ^~~~~~~~~
-structfe.y:189:13: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘node_t * {aka struct node_t *}’ [-Wformat=]
-         : EXTERN type_specifier       {printf("%s %p",$2,$2);
-             ^~~~~~~ ~~~~~~~~~~~~~~~
-structfe.y:216:44: warning: passing argument 1 of ‘strlen’ from incompatible pointer type [-Wincompatible-pointer-types]
-         : '*' direct_declarator             {char* s = malloc(strlen("*") + strlen($2) + 1);
-                                            ^
+structfe.tab.c:1306:16: warning: implicit declaration of function ‘yylex’ [-Wimplicit-function-declaration]
+structfe.y:263:83: warning: passing argument 1 of ‘strlen’ from incompatible pointer type [-Wincompatible-pointer-types]
+                                             char* s = malloc(strlen("*") + strlen($2) + 1);
+                                                                                   ^
 In file included from structfe.y:4:0:
 /usr/include/string.h:384:15: note: expected ‘const char *’ but argument is of type ‘node_t * {aka struct node_t *}’
  extern size_t strlen (const char *__s)
                ^~~~~~
-structfe.y:218:55: warning: passing argument 2 of ‘strcat’ from incompatible pointer type [-Wincompatible-pointer-types]
+structfe.y:265:55: warning: passing argument 2 of ‘strcat’ from incompatible pointer type [-Wincompatible-pointer-types]
                                              strcat(s, $2);
                                                        ^
 In file included from structfe.y:4:0:
 /usr/include/string.h:129:14: note: expected ‘const char * restrict’ but argument is of type ‘node_t * {aka struct node_t *}’
  extern char *strcat (char *__restrict __dest, const char *__restrict __src)
               ^~~~~~
-structfe.y:219:58: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
+structfe.y:266:58: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
                                              $$ = s;}
                                                           ^
-structfe.tab.c:1797:7: warning: implicit declaration of function ‘yyerror’; did you mean ‘yyerrok’? [-Wimplicit-function-declaration]
+structfe.tab.c:1977:9: warning: implicit declaration of function ‘yyerror’; did you mean ‘yyerrok’? [-Wimplicit-function-declaration]
 structfe.y: At top level:
-structfe.y:304:1: warning: conflicting types for ‘yyerror’
+structfe.y:367:1: warning: conflicting types for ‘yyerror’
  yyerror (char const *s)
  ^~~~~~~
-structfe.tab.c:1797:7: note: previous implicit declaration of ‘yyerror’ was here
+structfe.tab.c:1977:9: note: previous implicit declaration of ‘yyerror’ was here

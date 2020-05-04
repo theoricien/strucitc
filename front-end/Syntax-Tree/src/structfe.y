@@ -16,9 +16,9 @@ void log2 (char *msg)
 %union{
   node_t *node;
   char *string;
-  char uop;
 }
 
+%define parse.error verbose
 
 %token IDENTIFIER CONSTANT SIZEOF
 %token PTR_OP LE_OP GE_OP L_OP G_OP EQ_OP NE_OP
@@ -31,15 +31,13 @@ void log2 (char *msg)
 %token IF ELSE WHILE FOR RETURN
 
 
-%type <string> IDENTIFIER CONSTANT SIZEOF PTR_OP LE_OP GE_OP L_OP G_OP EQ_OP NE_OP RB_OP LB_OP
+%type <string> IDENTIFIER CONSTANT SIZEOF PTR_OP LE_OP GE_OP L_OP G_OP EQ_OP NE_OP RB_OP LB_OP RETURN WHILE
 
-%type <string> AND_OP OR_OP
+%type <string> AND_OP OR_OP unary_operator VOID INT
 
 %type <node> primary_expression postfix_expression argument_expression_list
 
 %type <node> unary_expression
-
-%type <uop> unary_operator
 
 %type <node> additive_expression multiplicative_expression relational_expression
 
@@ -135,11 +133,11 @@ unary_expression
 
 unary_operator
         : '&'                         {log2("unary_operator -> &");
-                                      $$ = '&';}
+                                      $$ = "&";}
         | '*'                         {log2("unary_operator -> *");
-                                      $$ = '*';}
+                                      $$ = "*";}
         | '-'                         {log2("unary_operator -> -");
-                                      $$ = '-';}
+                                      $$ = "-";}
         ;
 
 multiplicative_expression
@@ -147,10 +145,10 @@ multiplicative_expression
                                       $$ = $1;}
         | multiplicative_expression '*' unary_expression
                                       {log2("multiplicative_expression -> multiplicative_expression * unary_expression");
-                                      $$ = build_opr('*',$1,$3);}
+                                      $$ = build_opr("*",$1,$3);}
         | multiplicative_expression '/' unary_expression
                                       {log2("multiplicative_expression -> multiplicative_expression / unary_expression");
-                                      $$ = build_opr('/',$1,$3);}
+                                      $$ = build_opr("/",$1,$3);}
         ;
 
 additive_expression
@@ -158,10 +156,10 @@ additive_expression
                                       $$ = $1;}
         | additive_expression '+' multiplicative_expression
                                       {log2("additive_expression -> additive_expression + multiplicative_expression");
-                                      $$ = build_opr('+',$1,$3);}
+                                      $$ = build_opr("+",$1,$3);}
         | additive_expression '-' multiplicative_expression
                                       {log2("additive_expression -> additive_expression - multiplicative_expression");
-                                      $$ = build_opr('-',$1,$3);}
+                                      $$ = build_opr("-",$1,$3);}
         ;
 
 relational_expression
@@ -222,7 +220,7 @@ expression
                                       $$ = $1;}
         | unary_expression '=' expression
                                       {log2("expression -> unary_expression = expression");
-                                      $$ = build_opr('=',$1,$3);}
+                                      $$ = build_opr("=",$1,$3);}
         | binary_expression           {log2("expression -> binary_expression");
                                       $$ = $1;}
         ;
@@ -230,18 +228,18 @@ expression
 declaration
         : declaration_specifiers declarator ';'
                                       {log2("declaration -> declaration_specifiers declarator ';'");
-                                      $$ = build_uopr(';',$2);}
+                                      $$ = build_opr(";",$1,$2);}
         | struct_specifier ';'
         ;
 
 declaration_specifiers
-        : EXTERN type_specifier
-        | type_specifier              //{$$ = $1;}
+        : EXTERN type_specifier       {$$ = build_uopr("extern",$2);}
+        | type_specifier              {$$ = $1;}
         ;
 
 type_specifier
-        : VOID
-        | INT
+        : VOID                        {$$ = build_leaf(TT,$1);}
+        | INT                         {$$ = build_leaf(TT,$1);}
         | struct_specifier
         ;
 
@@ -271,7 +269,7 @@ declarator
         ;
 
 direct_declarator
-        : IDENTIFIER
+        : IDENTIFIER          {$$ = build_leaf(TID,$1);}
         | '(' declarator ')'
         | direct_declarator '(' parameter_list ')'
         | direct_declarator '(' ')'
@@ -296,41 +294,54 @@ statement
 
 compound_statement
         : '{' '}'
-        | '{' statement_list '}'
-        | '{' declaration_list '}'
-        | '{' declaration_list statement_list '}'
+        | '{' statement_list '}' {$$ = $2;}
+        | '{' declaration_list '}' {$$ = $2;}
+        | '{' declaration_list statement_list '}'{$$ = build_opr("?",$2,$3);}
         ;
 
 declaration_list
-        : declaration {log2("declaration_list -> declaration");$$ = $1;}
+        : declaration                     {log2("declaration_list -> declaration");$$ = $1;}
         | declaration_list declaration
+                                          {log2("declaration_list -> declaration");
+                                          $$ = build_list(TD,"declaration_list",$2,$1);}
         ;
 
 statement_list
-        : statement {log2("statement_list -> statement");$$ = $1;}
+        : statement {log2("statement_list -> statement");
+                    $$ = $1;} //$$ = build_list(TS,"statement",$1,NULL);}
         | statement_list statement
+                    {log2("statement_list -> statement");
+                    $$ = build_list(TS,"statement_list",$2,$1);}
         ;
 
 expression_statement
         : ';'
         | expression ';' {log2("expression_statement -> expression");
-                          $$ = $1;
-                          stringify($$,0);}
+                          $$ = $1;}
         ;
 
 selection_statement
-        : IF '(' expression ')' statement
+        : IF '(' expression ')' statement         {log2("selection_statement -> IF ( expression ) statement");
+                                                  $$ = build_if($3,$5,NULL);}
         | IF '(' expression ')' statement ELSE statement
+                                                  {log2("selection_statement -> IF ( expression ) statement ELSE statement");
+                                                  $$ = build_if($3,$5,$7);}
         ;
 
 iteration_statement
-        : WHILE '(' expression ')' statement
+        : WHILE '(' expression ')' statement      {log2("iteration_statement -> WHILE '(' expression ')' statement ");
+                                                  $$ = build_opr($1,$3,$5);}
         | FOR '(' expression_statement expression_statement expression ')' statement
+                                                  {log2("iteration_statement -> FOR '(' expression_statement expression_statement expression ')' statement ");
+                                                  $$ = build_for($3,$4,$5,$7);}
         ;
 
 jump_statement
-        : RETURN ';'
-        | RETURN expression ';'
+        : RETURN ';'                              {log2("jump_statement -> RETURN ;");
+                                                  $$ = build_leaf(TRET,$1);}
+
+        | RETURN expression ';'                   {log2("jump_statement -> RETURN expression ;");
+                                                  $$ = build_uopr("return",$2);}
         ;
 
 program
@@ -345,7 +356,7 @@ external_declaration
         ;
 
 function_definition
-        : declaration_specifiers declarator compound_statement
+        : declaration_specifiers declarator compound_statement  {stringify($3,0);}
         ;
 
 %%

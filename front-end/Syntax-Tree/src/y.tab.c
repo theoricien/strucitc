@@ -69,7 +69,15 @@
 #include <string.h>
 #include "tree.h"
 
-#line 73 "structfe.tab.c" /* yacc.c:339  */
+int verbose2 = 0;
+
+void log2 (char *msg)
+{
+    if (verbose2)
+        printf("[***] %s\n", msg);
+}
+
+#line 81 "structfe.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -84,7 +92,7 @@
 # undef YYERROR_VERBOSE
 # define YYERROR_VERBOSE 1
 #else
-# define YYERROR_VERBOSE 0
+# define YYERROR_VERBOSE 1
 #endif
 
 /* In a future release of Bison, this section will be replaced
@@ -137,12 +145,12 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 8 "structfe.y" /* yacc.c:355  */
+#line 16 "structfe.y" /* yacc.c:355  */
 
   node_t *node;
   char *string;
 
-#line 146 "structfe.tab.c" /* yacc.c:355  */
+#line 154 "structfe.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -159,7 +167,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 163 "structfe.tab.c" /* yacc.c:358  */
+#line 171 "structfe.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -459,19 +467,19 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    51,    51,    52,    53,    57,    58,    61,    67,    72,
-      80,    82,    90,    92,    94,   103,   115,   116,   117,   121,
-     122,   124,   129,   130,   132,   137,   138,   140,   142,   144,
-     149,   150,   152,   157,   158,   163,   164,   169,   171,   176,
-     177,   179,   183,   185,   189,   191,   195,   196,   197,   201,
-     202,   203,   207,   208,   212,   216,   220,   224,   225,   226,
-     227,   231,   232,   236,   240,   241,   242,   243,   244,   248,
-     249,   250,   251,   255,   256,   260,   261,   265,   266,   271,
-     272,   276,   277,   281,   282,   286,   287,   291,   292,   296
+       0,    60,    60,    62,    64,    69,    70,    74,    81,    87,
+      96,    99,   108,   111,   114,   123,   135,   137,   139,   144,
+     146,   149,   155,   157,   160,   166,   168,   171,   174,   177,
+     183,   185,   188,   194,   196,   202,   204,   210,   213,   219,
+     221,   224,   229,   232,   236,   237,   241,   242,   243,   247,
+     248,   249,   253,   254,   258,   262,   267,   272,   273,   274,
+     275,   279,   280,   284,   288,   289,   290,   291,   292,   296,
+     297,   298,   299,   303,   304,   310,   312,   318,   319,   324,
+     326,   332,   334,   340,   343,   348,   350,   354,   355,   359
 };
 #endif
 
-#if YYDEBUG || YYERROR_VERBOSE || 0
+#if YYDEBUG || YYERROR_VERBOSE || 1
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
@@ -1374,377 +1382,522 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 51 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_leaf(TID, (yyvsp[0].string));}
-#line 1380 "structfe.tab.c" /* yacc.c:1646  */
+#line 60 "structfe.y" /* yacc.c:1646  */
+    {log2("primary_expression -> IDENTIFIER");
+                      (yyval.node) = build_leaf(TID, (yyvsp[0].string));}
+#line 1389 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 52 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_leaf(TCONS, (yyvsp[0].string));}
-#line 1386 "structfe.tab.c" /* yacc.c:1646  */
+#line 62 "structfe.y" /* yacc.c:1646  */
+    {log2("primary_expression -> IDENTIFIER");
+                      (yyval.node) = build_leaf(TCONS, (yyvsp[0].string));}
+#line 1396 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 53 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[-1].node);}
-#line 1392 "structfe.tab.c" /* yacc.c:1646  */
+#line 64 "structfe.y" /* yacc.c:1646  */
+    {log2("primary_expression -> ( expression )");
+                      (yyval.node) = (yyvsp[-1].node);}
+#line 1403 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 57 "structfe.y" /* yacc.c:1646  */
+#line 69 "structfe.y" /* yacc.c:1646  */
     {(yyval.node) = (yyvsp[0].node);}
-#line 1398 "structfe.tab.c" /* yacc.c:1646  */
+#line 1409 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 58 "structfe.y" /* yacc.c:1646  */
-    {(yyvsp[-2].node)->leaf->value = realloc((yyvsp[-2].node)->leaf->value, strlen((yyvsp[-2].node)->leaf->value) + 3);
+#line 70 "structfe.y" /* yacc.c:1646  */
+    {log2("postfix_expression -> postfix_expression ( )");
+                                      (yyvsp[-2].node)->leaf->value = realloc((yyvsp[-2].node)->leaf->value, strlen((yyvsp[-2].node)->leaf->value) + 3);
                                       strcat((yyvsp[-2].node)->leaf->value, "()");
                                       (yyval.node) = (yyvsp[-2].node);}
-#line 1406 "structfe.tab.c" /* yacc.c:1646  */
+#line 1418 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 62 "structfe.y" /* yacc.c:1646  */
-    {(yyvsp[-3].node)->leaf->value = realloc((yyvsp[-3].node)->leaf->value, strlen((yyvsp[-3].node)->leaf->value) + 3 + strlen((yyvsp[-1].node)->leaf->value));
+#line 75 "structfe.y" /* yacc.c:1646  */
+    {log2("postfix_expression -> postfix_expression ( argument_expression_list )");
+                                      //$1->leaf->value = realloc($1->leaf->value, strlen($1->leaf->value) + 3 + strlen($3->leaf->value));
                                       strcat((yyvsp[-3].node)->leaf->value, "(");
-                                      strcat((yyvsp[-3].node)->leaf->value, (yyvsp[-1].node)->leaf->value);
+                                      //strcat($1->leaf->value, $3->leaf->value);
                                       strcat((yyvsp[-3].node)->leaf->value, ")");
                                       (yyval.node) = (yyvsp[-3].node);}
-#line 1416 "structfe.tab.c" /* yacc.c:1646  */
+#line 1429 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 68 "structfe.y" /* yacc.c:1646  */
-    {(yyvsp[-2].node)->leaf->value = realloc((yyvsp[-2].node)->leaf->value, strlen((yyvsp[-2].node)->leaf->value) + 2 + strlen((yyvsp[0].string)));
+#line 82 "structfe.y" /* yacc.c:1646  */
+    {log2("postfix_expression -> postfix_expression . IDENTIFIER");
+                                      (yyvsp[-2].node)->leaf->value = realloc((yyvsp[-2].node)->leaf->value, strlen((yyvsp[-2].node)->leaf->value) + 2 + strlen((yyvsp[0].string)));
                                       strcat((yyvsp[-2].node)->leaf->value, ".");
                                       strcat((yyvsp[-2].node)->leaf->value, (yyvsp[0].string));
                                       (yyval.node) = (yyvsp[-2].node);}
-#line 1425 "structfe.tab.c" /* yacc.c:1646  */
+#line 1439 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 73 "structfe.y" /* yacc.c:1646  */
-    {(yyvsp[-2].node)->leaf->value = realloc((yyvsp[-2].node)->leaf->value, strlen((yyvsp[-2].node)->leaf->value) + strlen((yyvsp[-1].string)) + 1 + strlen((yyvsp[0].string)));
+#line 88 "structfe.y" /* yacc.c:1646  */
+    {log2("postfix_expression -> postfix_expression PTR_OP IDENTIFIER");
+                                      (yyvsp[-2].node)->leaf->value = realloc((yyvsp[-2].node)->leaf->value, strlen((yyvsp[-2].node)->leaf->value) + strlen((yyvsp[-1].string)) + 1 + strlen((yyvsp[0].string)));
                                       strcat((yyvsp[-2].node)->leaf->value, (yyvsp[-1].string));
                                       strcat((yyvsp[-2].node)->leaf->value, (yyvsp[0].string));
-                                      (yyval.node) = (yyvsp[-2].node);}
-#line 1434 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 10:
-#line 81 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1440 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 11:
-#line 83 "structfe.y" /* yacc.c:1646  */
-    {(yyvsp[-2].node)->leaf->value = realloc((yyvsp[-2].node)->leaf->value, strlen((yyvsp[-2].node)->leaf->value) + 3 + strlen((yyvsp[0].node)->leaf->value));
-                                      strcat((yyvsp[-2].node)->leaf->value, ", ");
-                                      strcat((yyvsp[-2].node)->leaf->value, (yyvsp[0].node)->leaf->value);
                                       (yyval.node) = (yyvsp[-2].node);}
 #line 1449 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
+  case 10:
+#line 97 "structfe.y" /* yacc.c:1646  */
+    {log2("argument_expression_list -> expression");
+                                      (yyval.node) = (yyvsp[0].node);}
+#line 1456 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 11:
+#line 100 "structfe.y" /* yacc.c:1646  */
+    {log2("argument_expression_list -> argument_expression_list , expression");
+                                      (yyvsp[-2].node)->leaf->value = realloc((yyvsp[-2].node)->leaf->value, strlen((yyvsp[-2].node)->leaf->value) + 3 + strlen((yyvsp[0].node)->leaf->value));
+                                      strcat((yyvsp[-2].node)->leaf->value, ", ");
+                                      strcat((yyvsp[-2].node)->leaf->value, (yyvsp[0].node)->leaf->value);
+                                      (yyval.node) = (yyvsp[-2].node);}
+#line 1466 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
   case 12:
-#line 91 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1455 "structfe.tab.c" /* yacc.c:1646  */
+#line 109 "structfe.y" /* yacc.c:1646  */
+    {log2("unary_expression -> postfix_expression");
+                                      (yyval.node) = (yyvsp[0].node);}
+#line 1473 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 93 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_uopr((yyvsp[-1].node),(yyvsp[0].node));}
-#line 1461 "structfe.tab.c" /* yacc.c:1646  */
+#line 112 "structfe.y" /* yacc.c:1646  */
+    {log2("unary_expression -> unary_operator unary_expression");
+                                      (yyval.node) = build_uopr((yyvsp[-1].string),(yyvsp[0].node));}
+#line 1480 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 95 "structfe.y" /* yacc.c:1646  */
-    {
-                                      char* s = malloc(strlen((yyvsp[-3].string)) + 3 + strlen((yyvsp[-1].node)->leaf->value));
-                                      strcat(s, (yyvsp[-3].string));
-                                      strcat(s, "(");
-                                      strcat(s, (yyvsp[-1].node)->leaf->value);
-                                      strcat(s, ")");
-                                      (yyval.node) = build_leaf(TID,s);
-                                      }
-#line 1474 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 15:
-#line 104 "structfe.y" /* yacc.c:1646  */
-    {
-                                      char* s = malloc(strlen((yyvsp[-3].string)) + 3 + strlen((yyvsp[-1].node)->leaf->value));
-                                      strcat(s, (yyvsp[-3].string));
-                                      strcat(s, "(");
-                                      strcat(s, (yyvsp[-1].node)->leaf->value);
-                                      strcat(s, ")");
-                                      (yyval.node) = build_leaf(TID,s);
-                                      }
-#line 1487 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 16:
 #line 115 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = "&";}
+    {log2("unary_expression -> SIZEOF ( type_specifier )");
+                                      char* s = malloc(strlen((yyvsp[-3].string)) + 3 + strlen((yyvsp[-1].node)->leaf->value));
+                                      strcat(s, (yyvsp[-3].string));
+                                      strcat(s, "(");
+                                      strcat(s, (yyvsp[-1].node)->leaf->value);
+                                      strcat(s, ")");
+                                      (yyval.node) = build_leaf(TID,s);
+                                      }
 #line 1493 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
+  case 15:
+#line 124 "structfe.y" /* yacc.c:1646  */
+    {log2("unary_expression -> SIZEOF ( expression)");
+                                      char* s = malloc(strlen((yyvsp[-3].string)) + 3 + strlen((yyvsp[-1].node)->leaf->value));
+                                      strcat(s, (yyvsp[-3].string));
+                                      strcat(s, "(");
+                                      strcat(s, (yyvsp[-1].node)->leaf->value);
+                                      strcat(s, ")");
+                                      (yyval.node) = build_leaf(TID,s);
+                                      }
+#line 1506 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 16:
+#line 135 "structfe.y" /* yacc.c:1646  */
+    {log2("unary_operator -> &");
+                                      (yyval.string) = "&";}
+#line 1513 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
   case 17:
-#line 116 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = "*";}
-#line 1499 "structfe.tab.c" /* yacc.c:1646  */
+#line 137 "structfe.y" /* yacc.c:1646  */
+    {log2("unary_operator -> *");
+                                      (yyval.string) = "*";}
+#line 1520 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 117 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = "-";}
-#line 1505 "structfe.tab.c" /* yacc.c:1646  */
+#line 139 "structfe.y" /* yacc.c:1646  */
+    {log2("unary_operator -> -");
+                                      (yyval.string) = "-";}
+#line 1527 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 121 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1511 "structfe.tab.c" /* yacc.c:1646  */
+#line 144 "structfe.y" /* yacc.c:1646  */
+    {log2("multiplicative_expression -> unary_expression");
+                                      (yyval.node) = (yyvsp[0].node);}
+#line 1534 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 123 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr('*',(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1517 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 21:
-#line 125 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr('/',(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1523 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 22:
-#line 129 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1529 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 23:
-#line 131 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr('+',(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1535 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 24:
-#line 133 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr('-',(yyvsp[-2].node),(yyvsp[0].node));}
+#line 147 "structfe.y" /* yacc.c:1646  */
+    {log2("multiplicative_expression -> multiplicative_expression * unary_expression");
+                                      (yyval.node) = build_opr("*",(yyvsp[-2].node),(yyvsp[0].node));}
 #line 1541 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
+  case 21:
+#line 150 "structfe.y" /* yacc.c:1646  */
+    {log2("multiplicative_expression -> multiplicative_expression / unary_expression");
+                                      (yyval.node) = build_opr("/",(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1548 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 22:
+#line 155 "structfe.y" /* yacc.c:1646  */
+    {log2("additive_expression -> multiplicative_expression");
+                                      (yyval.node) = (yyvsp[0].node);}
+#line 1555 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 23:
+#line 158 "structfe.y" /* yacc.c:1646  */
+    {log2("additive_expression -> additive_expression + multiplicative_expression");
+                                      (yyval.node) = build_opr("+",(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1562 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 24:
+#line 161 "structfe.y" /* yacc.c:1646  */
+    {log2("additive_expression -> additive_expression - multiplicative_expression");
+                                      (yyval.node) = build_opr("-",(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1569 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
   case 25:
-#line 137 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1547 "structfe.tab.c" /* yacc.c:1646  */
+#line 166 "structfe.y" /* yacc.c:1646  */
+    {log2("relational_expression -> additive_expression");
+                                      (yyval.node) = (yyvsp[0].node);}
+#line 1576 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 139 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1553 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 27:
-#line 141 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1559 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 28:
-#line 143 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1565 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 29:
-#line 145 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1571 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 30:
-#line 149 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1577 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 31:
-#line 151 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 169 "structfe.y" /* yacc.c:1646  */
+    {log2("relational_expression -> relational_expression L_OP additive_expression");
+                                      (yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
 #line 1583 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
-  case 32:
-#line 153 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1589 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 33:
-#line 157 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1595 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 34:
-#line 159 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1601 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 35:
-#line 163 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1607 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 36:
-#line 165 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1613 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 37:
-#line 170 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1619 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 38:
+  case 27:
 #line 172 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
+    {log2("relational_expression -> relational_expression G_OP additive_expression");
+                                      (yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1590 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 28:
+#line 175 "structfe.y" /* yacc.c:1646  */
+    {log2("relational_expression -> relational_expression LE_OP additive_expression");
+                                      (yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1597 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 29:
+#line 178 "structfe.y" /* yacc.c:1646  */
+    {log2("relational_expression -> relational_expression GE_OP additive_expression");
+                                      (yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1604 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 30:
+#line 183 "structfe.y" /* yacc.c:1646  */
+    {log2("equality_expression -> relational_expression");
+                                      (yyval.node) = (yyvsp[0].node);}
+#line 1611 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 31:
+#line 186 "structfe.y" /* yacc.c:1646  */
+    {log2("equality_expression -> equality_expression EQ_OP relational_expression");
+                                      (yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1618 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 32:
+#line 189 "structfe.y" /* yacc.c:1646  */
+    {log2("equality_expression -> equality_expression NE_OP relational_expression");
+                                      (yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
 #line 1625 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
+  case 33:
+#line 194 "structfe.y" /* yacc.c:1646  */
+    {log2("logical_and_expression -> equality_expression");
+                                      (yyval.node) = (yyvsp[0].node);}
+#line 1632 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 34:
+#line 197 "structfe.y" /* yacc.c:1646  */
+    {log2("logical_and_expression -> logical_and_expression AND_OP equality_expression");
+                                      (yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1639 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 35:
+#line 202 "structfe.y" /* yacc.c:1646  */
+    {log2("logical_or_expression -> logical_and_expression");
+                                      (yyval.node) = (yyvsp[0].node);}
+#line 1646 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 36:
+#line 205 "structfe.y" /* yacc.c:1646  */
+    {log2("logical_or_expression -> logical_or_expression OR_OP logical_and_expression");
+                                      (yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1653 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 37:
+#line 211 "structfe.y" /* yacc.c:1646  */
+    {log2("binary_expression -> logical_or_expression RB_OP logical_or_expression");
+                                      (yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1660 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 38:
+#line 214 "structfe.y" /* yacc.c:1646  */
+    {log2("binary_expression -> logical_or_expression LB_OP logical_or_expression");
+                                      (yyval.node) = build_opr((yyvsp[-1].string),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1667 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
   case 39:
-#line 176 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1631 "structfe.tab.c" /* yacc.c:1646  */
+#line 219 "structfe.y" /* yacc.c:1646  */
+    {log2("expression -> logical_or_expression");
+                                      (yyval.node) = (yyvsp[0].node);}
+#line 1674 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 178 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_opr('=',(yyvsp[-2].node),(yyvsp[0].node));}
-#line 1637 "structfe.tab.c" /* yacc.c:1646  */
+#line 222 "structfe.y" /* yacc.c:1646  */
+    {log2("expression -> unary_expression = expression");
+                                      (yyval.node) = build_opr("=",(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1681 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 179 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1643 "structfe.tab.c" /* yacc.c:1646  */
+#line 224 "structfe.y" /* yacc.c:1646  */
+    {log2("expression -> binary_expression");
+                                      (yyval.node) = (yyvsp[0].node);}
+#line 1688 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 184 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = build_uopr(';',(yyvsp[-1].node));}
-#line 1649 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 44:
-#line 189 "structfe.y" /* yacc.c:1646  */
-    {printf("%s %p",(yyvsp[0].node),(yyvsp[0].node));
-                                      }
-#line 1656 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 55:
-#line 216 "structfe.y" /* yacc.c:1646  */
-    {char* s = malloc(strlen("*") + strlen((yyvsp[0].node)) + 1);
-                                            strcat(s, "*");
-                                            strcat(s, (yyvsp[0].node));
-                                            (yyval.node) = s;}
-#line 1665 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 56:
-#line 220 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1671 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 61:
-#line 231 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1677 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 64:
-#line 240 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1683 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 65:
-#line 241 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1689 "structfe.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 66:
-#line 242 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
+#line 230 "structfe.y" /* yacc.c:1646  */
+    {log2("declaration -> declaration_specifiers declarator ';'");
+                                      (yyval.node) = build_opr(";",(yyvsp[-2].node),(yyvsp[-1].node));}
 #line 1695 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
-  case 67:
-#line 243 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
+  case 44:
+#line 236 "structfe.y" /* yacc.c:1646  */
+    {(yyval.node) = build_uopr("extern",(yyvsp[0].node));}
 #line 1701 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
-  case 68:
-#line 244 "structfe.y" /* yacc.c:1646  */
+  case 45:
+#line 237 "structfe.y" /* yacc.c:1646  */
     {(yyval.node) = (yyvsp[0].node);}
 #line 1707 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
-  case 73:
-#line 255 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
+  case 46:
+#line 241 "structfe.y" /* yacc.c:1646  */
+    {(yyval.node) = build_leaf(TT,(yyvsp[0].string));}
 #line 1713 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
-  case 75:
-#line 260 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
+  case 47:
+#line 242 "structfe.y" /* yacc.c:1646  */
+    {(yyval.node) = build_leaf(TT,(yyvsp[0].string));}
 #line 1719 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
+  case 55:
+#line 262 "structfe.y" /* yacc.c:1646  */
+    {log2("declarator -> '*' direct_declarator");
+                                            char* s = malloc(strlen("*") + strlen((yyvsp[0].node)) + 1);
+                                            strcat(s, "*");
+                                            strcat(s, (yyvsp[0].node));
+                                            (yyval.node) = s;}
+#line 1729 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 56:
+#line 267 "structfe.y" /* yacc.c:1646  */
+    {log2("declarator -> direct_declarator");
+                                            (yyval.node) = (yyvsp[0].node);}
+#line 1736 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 57:
+#line 272 "structfe.y" /* yacc.c:1646  */
+    {(yyval.node) = build_leaf(TID,(yyvsp[0].string));}
+#line 1742 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 61:
+#line 279 "structfe.y" /* yacc.c:1646  */
+    {(yyval.node) = (yyvsp[0].node);}
+#line 1748 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 64:
+#line 288 "structfe.y" /* yacc.c:1646  */
+    {log2("statement -> compound_statement");(yyval.node) = (yyvsp[0].node);}
+#line 1754 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 65:
+#line 289 "structfe.y" /* yacc.c:1646  */
+    {log2("statement -> expression_statement");(yyval.node) = (yyvsp[0].node);}
+#line 1760 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 66:
+#line 290 "structfe.y" /* yacc.c:1646  */
+    {log2("statement -> selection_statement");(yyval.node) = (yyvsp[0].node);}
+#line 1766 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 67:
+#line 291 "structfe.y" /* yacc.c:1646  */
+    {log2("statement -> iteration_statement");(yyval.node) = (yyvsp[0].node);}
+#line 1772 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 68:
+#line 292 "structfe.y" /* yacc.c:1646  */
+    {log2("statement -> jump_statement");(yyval.node) = (yyvsp[0].node);}
+#line 1778 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 70:
+#line 297 "structfe.y" /* yacc.c:1646  */
+    {(yyval.node) = (yyvsp[-1].node);}
+#line 1784 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 71:
+#line 298 "structfe.y" /* yacc.c:1646  */
+    {(yyval.node) = (yyvsp[-1].node);}
+#line 1790 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 72:
+#line 299 "structfe.y" /* yacc.c:1646  */
+    {(yyval.node) = build_opr("?",(yyvsp[-2].node),(yyvsp[-1].node));}
+#line 1796 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 73:
+#line 303 "structfe.y" /* yacc.c:1646  */
+    {log2("declaration_list -> declaration");(yyval.node) = (yyvsp[0].node);}
+#line 1802 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 74:
+#line 305 "structfe.y" /* yacc.c:1646  */
+    {log2("declaration_list -> declaration");
+                                          (yyval.node) = build_list(TD,"declaration_list",(yyvsp[0].node),(yyvsp[-1].node));}
+#line 1809 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 75:
+#line 310 "structfe.y" /* yacc.c:1646  */
+    {log2("statement_list -> statement");
+                    (yyval.node) = (yyvsp[0].node);}
+#line 1816 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 76:
+#line 313 "structfe.y" /* yacc.c:1646  */
+    {log2("statement_list -> statement");
+                    (yyval.node) = build_list(TS,"statement_list",(yyvsp[0].node),(yyvsp[-1].node));}
+#line 1823 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
   case 78:
-#line 266 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[-1].node);
-                          stringify((yyval.node),0);}
-#line 1726 "structfe.tab.c" /* yacc.c:1646  */
+#line 319 "structfe.y" /* yacc.c:1646  */
+    {log2("expression_statement -> expression");
+                          (yyval.node) = (yyvsp[-1].node);}
+#line 1830 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 79:
+#line 324 "structfe.y" /* yacc.c:1646  */
+    {log2("selection_statement -> IF ( expression ) statement");
+                                                  (yyval.node) = build_if((yyvsp[-2].node),(yyvsp[0].node),NULL);}
+#line 1837 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 80:
+#line 327 "structfe.y" /* yacc.c:1646  */
+    {log2("selection_statement -> IF ( expression ) statement ELSE statement");
+                                                  (yyval.node) = build_if((yyvsp[-4].node),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1844 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 81:
+#line 332 "structfe.y" /* yacc.c:1646  */
+    {log2("iteration_statement -> WHILE '(' expression ')' statement ");
+                                                  (yyval.node) = build_opr((yyvsp[-4].string),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1851 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 82:
+#line 335 "structfe.y" /* yacc.c:1646  */
+    {log2("iteration_statement -> FOR '(' expression_statement expression_statement expression ')' statement ");
+                                                  (yyval.node) = build_for((yyvsp[-4].node),(yyvsp[-3].node),(yyvsp[-2].node),(yyvsp[0].node));}
+#line 1858 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 83:
+#line 340 "structfe.y" /* yacc.c:1646  */
+    {log2("jump_statement -> RETURN ;");
+                                                  (yyval.node) = build_leaf(TRET,(yyvsp[-1].string));}
+#line 1865 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 84:
+#line 343 "structfe.y" /* yacc.c:1646  */
+    {log2("jump_statement -> RETURN expression ;");
+                                                  (yyval.node) = build_uopr("return",(yyvsp[-1].node));}
+#line 1872 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 85:
-#line 286 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1732 "structfe.tab.c" /* yacc.c:1646  */
+#line 348 "structfe.y" /* yacc.c:1646  */
+    {log2("program -> external_declaration");
+                                (yyval.node) = (yyvsp[0].node);}
+#line 1879 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 87:
-#line 291 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1738 "structfe.tab.c" /* yacc.c:1646  */
+#line 354 "structfe.y" /* yacc.c:1646  */
+    {log2("external_declaration -> function_definition");(yyval.node) = (yyvsp[0].node);}
+#line 1885 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 88:
-#line 292 "structfe.y" /* yacc.c:1646  */
-    {(yyval.node) = (yyvsp[0].node);}
-#line 1744 "structfe.tab.c" /* yacc.c:1646  */
+#line 355 "structfe.y" /* yacc.c:1646  */
+    {log2("external_declaration -> declaration");(yyval.node) = (yyvsp[0].node);}
+#line 1891 "structfe.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 89:
+#line 359 "structfe.y" /* yacc.c:1646  */
+    {stringify((yyvsp[0].node),0);}
+#line 1897 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1748 "structfe.tab.c" /* yacc.c:1646  */
+#line 1901 "structfe.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1972,7 +2125,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 299 "structfe.y" /* yacc.c:1906  */
+#line 362 "structfe.y" /* yacc.c:1906  */
 
 
 extern FILE *yyin;
