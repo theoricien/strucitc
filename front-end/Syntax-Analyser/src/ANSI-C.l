@@ -1,12 +1,12 @@
 %{
 #include <stdio.h>
 #include "y.tab.h"
-int verbose = 0;
+int verbose = 1;
 
 void log (char *msg)
 {
     if (verbose)
-        printf("[*] %s\n", msg);
+        printf("%s", msg);
 }
 /* Ne gere pas les commentaires. A rajouter */
 /* Supprimer les lignes dont vous n'avez pas besoin. */
@@ -19,12 +19,10 @@ H                       [a-fA-F0-9]
 E                       [Ee][+-]?{D}+
 FS                      (f|F|l|L)
 IS                      (u|U|l|L)*
-COMMENTAIRE_MONO        (\/\/.*)|(\/\*.*\*\/)
 COMMENTAIRE_POLY        [\/][*][^*]*[*]+([^*\/][^*]*[*]+)*[\/]
 
 %%
 
-{COMMENTAIRE_MONO}      ;
 {COMMENTAIRE_POLY}      ;
 
 "extern"                {log("extern");return EXTERN;}
@@ -38,37 +36,51 @@ COMMENTAIRE_POLY        [\/][*][^*]*[*]+([^*\/][^*]*[*]+)*[\/]
 "return"                {log("return");return RETURN;}
 "sizeof"                {log("sizeof");return SIZEOF;}
 
-{L}({L}|{D})*           {log("IDENTIFIER");return IDENTIFIER;}
+{L}({L}|{D})*           {log(yytext);return IDENTIFIER;}
 
-0[xX]{H}+{IS}?          {log("HEX");return CONSTANT; /* HEX */}
-0{D}+{IS}?              {log("0DEC");return CONSTANT; /* DEC */}
-{D}+{IS}?               {log("DEC");return CONSTANT; /* DEC */}
-L?'(\\.|[^\\'])+'       {log("chelou 1");; /* chelou */ }
+0{D}+{IS}?              {log(yytext);return CONSTANT; /* DEC */}
+{D}+{IS}?               {log(yytext);return CONSTANT; /* DEC */}
+L?'(\\.|[^\\'])+'       {log(yytext);return CONSTANT; /* chelou */ }
 
-{D}+{E}{FS}?            {log("BIG INT");return CONSTANT; /* BIG INT */}
-{D}*"."{D}+({E})?{FS}?  {log("flottant chelou");return CONSTANT; /* flottant chelou: .588E-8 */ }
-{D}+"."{D}*({E})?{FS}?  {log("flottant chelou 2");return CONSTANT; /* flottant chelou 2: 184.L */ }
+L?\"(\\.|[^\\"])*\"	    {log(yytext);return(STRING_LITERAL);}
 
-L?\"(\\.|[^\\"])*\"     {log("chelou 2"); /* A completer */ }
+"+="                    {log(yytext); return(ADD_ASSIGN); }
+"-="                    {log(yytext); return(SUB_ASSIGN); }
+"*="                    {log(yytext); return(MUL_ASSIGN); }
+"/="                    {log(yytext); return(DIV_ASSIGN); }
 
-"++"                    {log("++");return INC_OP;}
-"--"                    {log("--");return DEC_OP;}
+"<="                    {log(yytext);return LE_OP;}
+">="                    {log(yytext);return GE_OP;}
+">"                     {log(yytext);return G_OP;}
+"<"                     {log(yytext);return L_OP;}
+"=="                    {log(yytext);return EQ_OP;}
+"!="                    {log(yytext);return NE_OP;}
 
-">>"                    {log("RB_OP");return RB_OP;}
-"<<"                    {log("LB_OP");return LB_OP;}
+"->"                    {log(yytext);return PTR_OP;}
 
-"<="                    {log("LE_OP");return LE_OP;}
-">="                    {log("GE_OP");return GE_OP;}
-">"                     {log("G_OP");return G_OP;}
-"<"                     {log("L_OP");return L_OP;}
-"=="                    {log("EQ_OP");return EQ_OP;}
-"!="                    {log("NE_OP");return NE_OP;}
+"&&"                    {log(yytext);return AND_OP;}
+"||"                    {log(yytext);return OR_OP;}
 
-"->"                    {log("PTR_OP");return PTR_OP;}
+";"                     {log(&yytext[0]); return(';'); }
+"{"                     {log(&yytext[0]); return('{'); }
+"}"                     {log(&yytext[0]); return('}'); }
+","                     {log(&yytext[0]); return(','); }
+":"                     {log(&yytext[0]); return(':'); }
+"="                     {log(&yytext[0]); return('='); }
+"("                     {log(&yytext[0]); return('('); }
+")"                     {log(&yytext[0]); return(')'); }
+"&"                     {log(&yytext[0]); return('&'); }
+"~"                     {log(&yytext[0]); return('~'); }
+"-"                     {log(&yytext[0]); return('-'); }
+"+"                     {log(&yytext[0]); return('+'); }
+"*"                     {log(&yytext[0]); return('*'); }
+"/"                     {log(&yytext[0]); return('/'); }
 
-"&&"                    {log("AND_OP");return AND_OP;}
-"||"                    {log("OR_OP");return OR_OP;}
-
-[ \t\v\n\f\r]           ;
-.                       {log(&yytext[0]); return yytext[0];}
+" "                     {log(" ");}
+"\t"                    {log("\t");}
+"\v"                    {log("\v");}
+"\n"                    {log("\n");}
+"\f"                    {log("\f");}
+"\r"                    {log("\r");}
+.                       {return yytext[0];}
 %%

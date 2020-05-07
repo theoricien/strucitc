@@ -1,209 +1,390 @@
 %{
-#include <stdio.h>
-#include <stdlib.h>
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include "tree.h"
+
+	int verbose2 = 0;
+
+	void log2 (char *msg)
+	{
+	    if (verbose2)
+	        printf("[***] %s\n", msg);
+	}
+
+	extern char yytext[];
+	int printed = 0;
+	void yyerror(char const *s);
+	int yylex();
 %}
-%token IDENTIFIER CONSTANT SIZEOF
-%token PTR_OP LE_OP GE_OP L_OP G_OP EQ_OP NE_OP
-%token INC_OP DEC_OP
-%token RB_OP LB_OP
-%token AND_OP OR_OP
+
+%union
+{
+	  node_t *	node;
+	  char *		string;
+}
+
+%define parse.error verbose
+
+%token IDENTIFIER CONSTANT STRING_LITERAL SIZEOF
+%token PTR_OP LE_OP GE_OP EQ_OP NE_OP
+%token L_OP G_OP
+%token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN ADD_ASSIGN
+%token SUB_ASSIGN
+%token TYPE_NAME
+
 %token EXTERN
 %token INT VOID
 %token STRUCT
+
 %token IF ELSE WHILE FOR RETURN
 
 %start program
 %%
 
 primary_expression
-        : IDENTIFIER
-        | CONSTANT
-        | '(' expression ')'
-        ;
+	: IDENTIFIER
+	| CONSTANT
+	| STRING_LITERAL
+	| '(' expression ')'
+	;
 
 postfix_expression
-        : primary_expression
-        | postfix_expression '(' ')'
-        | postfix_expression '(' argument_expression_list ')'
-        | postfix_expression '.' IDENTIFIER
-        | postfix_expression PTR_OP IDENTIFIER
-        ;
+	: primary_expression
+	| postfix_expression '(' ')'
+	| postfix_expression '(' argument_expression_list ')'
+	| postfix_expression PTR_OP IDENTIFIER
+	;
 
 argument_expression_list
-        : expression
-        | argument_expression_list ',' expression
-        ;
+	: assignment_expression
+	| argument_expression_list ',' assignment_expression
+	;
 
 unary_expression
-        : postfix_expression
-        | unary_operator unary_expression
-        | SIZEOF '(' type_specifier ')'
-        | SIZEOF '(' expression ')'
-        ;
+	: postfix_expression
+	| unary_operator cast_expression
+	| SIZEOF unary_expression
+	| SIZEOF '(' type_name ')'
+	;
 
 unary_operator
-        : '&'
-        | '*'
-        | '-'
-        ;
+	: '&'
+	| pointer
+	| '+'
+	| '-'
+	;
+
+cast_expression
+	: unary_expression
+	| '(' type_name ')' cast_expression
+	;
 
 multiplicative_expression
-        : unary_expression
-        | multiplicative_expression '*' unary_expression
-        | multiplicative_expression '/' unary_expression
-        ;
+	: cast_expression
+	| multiplicative_expression '*' cast_expression
+	| multiplicative_expression '/' cast_expression
+	;
 
 additive_expression
-        : multiplicative_expression
-        | additive_expression '+' multiplicative_expression
-        | additive_expression '-' multiplicative_expression
-        ;
+	: multiplicative_expression
+	| additive_expression '+' multiplicative_expression
+	| additive_expression '-' multiplicative_expression
+	;
 
 relational_expression
-        : additive_expression
-        | relational_expression L_OP additive_expression
-        | relational_expression G_OP additive_expression
-        | relational_expression LE_OP additive_expression
-        | relational_expression GE_OP additive_expression
-        ;
+	: additive_expression
+	| relational_expression L_OP additive_expression
+	| relational_expression G_OP additive_expression
+	| relational_expression LE_OP additive_expression
+	| relational_expression GE_OP additive_expression
+	;
 
 equality_expression
-        : relational_expression
-        | equality_expression EQ_OP relational_expression
-        | equality_expression NE_OP relational_expression
-        ;
+	: relational_expression
+	| equality_expression EQ_OP relational_expression
+	| equality_expression NE_OP relational_expression
+	;
 
 logical_and_expression
-        : equality_expression
-        | logical_and_expression AND_OP equality_expression
-        ;
+	: equality_expression
+	| logical_and_expression AND_OP equality_expression
+	;
 
 logical_or_expression
-        : logical_and_expression
-        | logical_or_expression OR_OP logical_and_expression
-        ;
+	: logical_and_expression
+	| logical_or_expression OR_OP logical_and_expression
+	;
 
-binary_expression
-        : logical_or_expression RB_OP logical_or_expression
-        | logical_or_expression LB_OP logical_or_expression
-        ;
+assignment_expression
+	: logical_or_expression
+
+	// Ca sert a affecter un terme unaire
+// *ptr = a || b;
+	// ptr->name = "aa";
+	| unary_expression assignment_operator assignment_expression
+	;
+
+if_expression
+	: logical_or_expression
+	;
+
+assignment_operator
+	: '='
+	| MUL_ASSIGN
+	| DIV_ASSIGN
+	| ADD_ASSIGN
+	| SUB_ASSIGN
+	;
 
 expression
-        : logical_or_expression
-        | unary_expression '=' expression
-        | binary_expression
-        ;
+	: assignment_expression
+	| expression ',' assignment_expression
+	;
 
 declaration
-        : declaration_specifiers declarator ';'
-        | struct_specifier ';'
-        ;
+	: declaration_specifiers init_declarator_list ';'
+	| declaration_specifiers ';'
+	;
 
 declaration_specifiers
-        : EXTERN type_specifier
-        | type_specifier
-        ;
+	: type_specifier
+	| type_specifier declaration_specifiers
+	;
+
+// int a, b, c = 4, d = 6, e;
+init_declarator_list
+	: init_declarator
+	| init_declarator_list ',' init_declarator
+	;
+
+init_declarator
+	: declarator
+
+	// Autorise la declaration durant la definition
+	| declarator '=' initializer
+	;
 
 type_specifier
-        : VOID
-        | INT
-        | struct_specifier
-        ;
+	: VOID
+	| INT
+	| struct_or_union_specifier
+	;
 
-struct_specifier
-        : STRUCT IDENTIFIER '{' struct_declaration_list '}'
-        | STRUCT '{' struct_declaration_list '}'
-        | STRUCT IDENTIFIER
-        ;
+struct_or_union_specifier
+	: STRUCT IDENTIFIER '{' struct_declaration_list '}'
+	| STRUCT '{' struct_declaration_list '}'
+	| STRUCT IDENTIFIER
+	;
 
 struct_declaration_list
-        : struct_declaration
-        | struct_declaration_list struct_declaration
-        ;
+	: struct_declaration
+	| struct_declaration_list struct_declaration
+	;
 
 struct_declaration
-        : type_specifier declarator ';'
-        ;
+	: specifier_qualifier_list struct_declarator_list ';'
+	;
+
+specifier_qualifier_list
+	: type_specifier specifier_qualifier_list
+	| type_specifier
+	;
+
+struct_declarator_list
+	: struct_declarator
+	| struct_declarator_list ',' struct_declarator
+	;
+
+struct_declarator
+	: declarator
+	;
 
 declarator
-        : '*' direct_declarator
-        | direct_declarator
-        ;
+	: pointer_direct_declarator
+	| direct_declarator
+	;
+
+// Pour ne pas permettre plusieur pointeurs
+pointer_direct_declarator
+	// int *aaaaaa
+	: pointer direct_declarator_pointer
+	// int *
+	| pointer
+	;
 
 direct_declarator
-        : IDENTIFIER
-        | '(' declarator ')'
-        | direct_declarator '(' parameter_list ')'
-        | direct_declarator '(' ')'
-        ;
+	: IDENTIFIER
+	| '(' declarator ')'
+	| direct_declarator '(' parameter_list ')'
+	| direct_declarator '(' identifier_list ')'
+	| direct_declarator '(' ')'
+	;
+
+direct_declarator_pointer
+	: IDENTIFIER
+
+	// int (b)
+	| '(' declarator ')'
+
+	// Function pointer
+	// int ( *b ) ( arguments )
+	| '(' pointer_direct_declarator ')' '(' parameter_list ')'
+	| '(' pointer_direct_declarator ')' '(' ')'
+
+	// fonction: int foo ( arguments );
+	| direct_declarator_pointer '(' parameter_list ')'
+	| direct_declarator_pointer '(' identifier_list ')'
+	| direct_declarator_pointer '(' ')'
+	;
+
+direct_declarator_function_pointer
+	: pointer IDENTIFIER
+	;
+
+pointer
+	: '*'
+	;
 
 parameter_list
-        : parameter_declaration
-        | parameter_list ',' parameter_declaration
-        ;
+	: parameter_declaration
+	| parameter_list ',' parameter_declaration
+	;
 
+// Parameters of func ptr / func
 parameter_declaration
-        : declaration_specifiers declarator
-        ;
+	// int *a,
+	: declaration_specifiers declarator
+
+	// int *,
+	| declaration_specifiers abstract_declarator
+
+	// int
+	| declaration_specifiers
+	;
+
+identifier_list
+	: IDENTIFIER
+	| identifier_list ',' IDENTIFIER
+	;
+
+type_name
+	: specifier_qualifier_list
+	| specifier_qualifier_list abstract_declarator
+	;
+
+abstract_declarator
+	: abstract_declarator_with_pointer
+	| direct_abstract_declarator
+	;
+
+abstract_declarator_with_pointer
+	: pointer
+	| pointer direct_abstract_declarator_pointer_free
+
+direct_abstract_declarator
+	: '(' abstract_declarator ')'
+	| '(' ')'
+	| '(' parameter_list ')'
+	| direct_abstract_declarator '(' ')'
+	| direct_abstract_declarator '(' parameter_list ')'
+	;
+
+direct_abstract_declarator_pointer_free
+	: '(' direct_abstract_declarator_pointer_free ')'
+	| '(' ')'
+	| '(' parameter_list ')'
+	| direct_abstract_declarator_pointer_free '(' ')'
+	| direct_abstract_declarator_pointer_free '(' parameter_list ')'
+	;
+
+initializer
+	: assignment_expression
+	;
 
 statement
-        : compound_statement
-        | expression_statement
-        | selection_statement
-        | iteration_statement
-        | jump_statement
-        ;
+	: compound_statement
+	| expression_statement
+	| selection_statement
+	| iteration_statement
+	| jump_statement
+	;
 
+// Body d'une declaration
 compound_statement
-        : '{' '}'
-        | '{' statement_list '}'
-        | '{' declaration_list '}'
-        | '{' declaration_list statement_list '}'
-        ;
+	: '{' '}'
+	| '{' block_item_list '}'
+	| ';'
+	;
 
-declaration_list
-        : declaration
-        | declaration_list declaration
-        ;
+block_item_list
+	: block_item
+	| block_item_list block_item
+	;
 
-statement_list
-        : statement
-        | statement_list statement
-        ;
+// block_item est juste une suite de declaration
+// et de statement
+block_item
+	: declaration
+	| statement
+	;
 
 expression_statement
-        : ';'
-        | expression ';'
-        ;
+	: ';'
+	| expression ';'
+	;
 
 selection_statement
-        : IF '(' expression ')' statement
-        | IF '(' expression ')' statement ELSE statement
-        ;
+	: IF '(' if_expression ')' statement
+	| IF '(' if_expression ')' statement ELSE statement
+	;
 
 iteration_statement
-        : WHILE '(' expression ')' statement
-        | FOR '(' expression_statement expression_statement expression ')' statement
-        ;
+	: WHILE '(' expression ')' statement
+
+	// for (;;) | for (expression; expression; )
+	// for (i = 0; i < 5; )
+	| FOR '(' expression_statement expression_statement ')' statement
+
+	// le for "classique"
+	// for (;;) | for (expression; expression; expression)
+	// for (i = 0; i < 5; i = i + 1)
+	| FOR '(' expression_statement expression_statement expression ')' statement
+
+	// for (;;)
+	// for (int i = 0, j, k; expression; )
+	| FOR '(' declaration expression_statement ')' statement
+
+	// for (int i = 0, j, k; expression; expression)
+	| FOR '(' declaration expression_statement expression ')' statement
+	;
 
 jump_statement
-        : RETURN ';'
-        | RETURN expression ';'
-        ;
+	: RETURN expression ';'
+  | RETURN ';'
+	;
 
 program
-        : external_declaration
-        | program external_declaration
-        ;
+  : external_declaration
+	| program external_declaration
+	;
 
+// Une suite de declaration de definitions de fonctions
 external_declaration
-        : function_definition
-        | declaration
-        ;
+	: function_definition external_declaration
+	| declaration external_declaration
+	| %empty
+	;
 
 function_definition
-        : declaration_specifiers declarator compound_statement
-        ;
+	: declaration_specifiers declarator declaration_list compound_statement
+	| declaration_specifiers declarator compound_statement
+	;
+
+declaration_list
+	: declaration
+	| declaration_list declaration
+	;
+
 
 %%
 
