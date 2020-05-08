@@ -47,29 +47,31 @@ extern int yydebug;
   {
     IDENTIFIER = 258,
     CONSTANT = 259,
-    SIZEOF = 260,
-    PTR_OP = 261,
-    LE_OP = 262,
-    GE_OP = 263,
-    L_OP = 264,
-    G_OP = 265,
-    EQ_OP = 266,
-    NE_OP = 267,
-    INC_OP = 268,
-    DEC_OP = 269,
-    RB_OP = 270,
-    LB_OP = 271,
-    AND_OP = 272,
-    OR_OP = 273,
-    EXTERN = 274,
-    INT = 275,
-    VOID = 276,
-    STRUCT = 277,
-    IF = 278,
-    ELSE = 279,
-    WHILE = 280,
-    FOR = 281,
-    RETURN = 282
+    STRING_LITERAL = 260,
+    SIZEOF = 261,
+    PTR_OP = 262,
+    LE_OP = 263,
+    GE_OP = 264,
+    EQ_OP = 265,
+    NE_OP = 266,
+    L_OP = 267,
+    G_OP = 268,
+    AND_OP = 269,
+    OR_OP = 270,
+    MUL_ASSIGN = 271,
+    DIV_ASSIGN = 272,
+    ADD_ASSIGN = 273,
+    SUB_ASSIGN = 274,
+    TYPE_NAME = 275,
+    EXTERN = 276,
+    INT = 277,
+    VOID = 278,
+    STRUCT = 279,
+    IF = 280,
+    ELSE = 281,
+    WHILE = 282,
+    FOR = 283,
+    RETURN = 284
   };
 #endif
 
@@ -78,12 +80,12 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 16 "structfe.y" /* yacc.c:1909  */
+#line 21 "structfe.y" /* yacc.c:1909  */
 
-  node_t *node;
-  char *string;
+	  node_t *	node;
+	  char *		string;
 
-#line 87 "structfe.tab.h" /* yacc.c:1909  */
+#line 89 "structfe.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

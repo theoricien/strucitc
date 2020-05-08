@@ -6,7 +6,7 @@ struct x
   void *(*d)();
   int *(*e)();
   struct x *(*f)();
-}
+};
 
 int main ()
 {

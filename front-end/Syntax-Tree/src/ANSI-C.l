@@ -1,7 +1,7 @@
 %{
 #include <stdio.h>
 #include "y.tab.h"
-int verbose = 1;
+int verbose = 0;
 
 void log (char *msg)
 {

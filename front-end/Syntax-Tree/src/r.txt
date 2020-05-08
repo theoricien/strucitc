@@ -1,50 +1,95 @@
-structfe.y:247.11-59: warning: type clash on default action: <node> != <> [-Wother]
-         : STRUCT IDENTIFIER '{' struct_declaration_list '}'
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:248.11-48: warning: type clash on default action: <node> != <> [-Wother]
-         | STRUCT '{' struct_declaration_list '}'
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-structfe.y:249.11-27: warning: type clash on default action: <node> != <> [-Wother]
-         | STRUCT IDENTIFIER
-           ^^^^^^^^^^^^^^^^^
-structfe.y:273.11-28: warning: type clash on default action: <node> != <> [-Wother]
-         | '(' declarator ')'
-           ^^^^^^^^^^^^^^^^^^
-structfe.y:296.11-17: warning: type clash on default action: <node> != <> [-Wother]
-         : '{' '}'
-           ^^^^^^^
-structfe.y:318.11-13: warning: type clash on default action: <node> != <> [-Wother]
-         : ';'
-           ^^^
-structfe.y: warning: 1 shift/reduce conflict [-Wconflicts-sr]
+structfe.y:495.7-33: warning: type clash on default action: <node> != <> [-Wother]
+     : '(' abstract_declarator ')'
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+structfe.y:496.7-13: warning: type clash on default action: <node> != <> [-Wother]
+     | '(' ')'
+       ^^^^^^^
+structfe.y:497.7-28: warning: type clash on default action: <node> != <> [-Wother]
+     | '(' parameter_list ')'
+       ^^^^^^^^^^^^^^^^^^^^^^
+structfe.y:503.7-53: warning: type clash on default action: <node> != <> [-Wother]
+     : '(' direct_abstract_declarator_pointer_free ')'
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+structfe.y:504.7-13: warning: type clash on default action: <node> != <> [-Wother]
+     | '(' ')'
+       ^^^^^^^
+structfe.y:505.7-28: warning: type clash on default action: <node> != <> [-Wother]
+     | '(' parameter_list ')'
+       ^^^^^^^^^^^^^^^^^^^^^^
+structfe.y: warning: 1 nonterminal useless in grammar [-Wother]
+structfe.y: warning: 2 rules useless in grammar [-Wother]
+structfe.y:51.80-95: warning: nonterminal useless in grammar: declaration_list [-Wother]
+ %type <node> parameter_list parameter_declaration statement compound_statement declaration_list
+                                                                                ^^^^^^^^^^^^^^^^
+structfe.y:651.7-652.14: warning: rule useless in grammar [-Wother]
+     : declaration
+       ^^^^^^^^^^^
+structfe.y:654.7-655.54: warning: rule useless in grammar [-Wother]
+     | declaration_list declaration
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+structfe.y: warning: 3 shift/reduce conflicts [-Wconflicts-sr]
+structfe.y: warning: 23 reduce/reduce conflicts [-Wconflicts-rr]
 ANSI-C.l:6:6: warning: conflicting types for built-in function ‘log’ [-Wbuiltin-declaration-mismatch]
  void log (char *msg)
       ^~~
-structfe.y:9:6: warning: conflicting types for built-in function ‘log2’ [-Wbuiltin-declaration-mismatch]
- void log2 (char *msg)
-      ^~~~
-structfe.tab.c: In function ‘yyparse’:
-structfe.tab.c:1306:16: warning: implicit declaration of function ‘yylex’ [-Wimplicit-function-declaration]
-structfe.y:263:83: warning: passing argument 1 of ‘strlen’ from incompatible pointer type [-Wincompatible-pointer-types]
-                                             char* s = malloc(strlen("*") + strlen($2) + 1);
-                                                                                   ^
-In file included from structfe.y:4:0:
-/usr/include/string.h:384:15: note: expected ‘const char *’ but argument is of type ‘node_t * {aka struct node_t *}’
- extern size_t strlen (const char *__s)
-               ^~~~~~
-structfe.y:265:55: warning: passing argument 2 of ‘strcat’ from incompatible pointer type [-Wincompatible-pointer-types]
-                                             strcat(s, $2);
-                                                       ^
-In file included from structfe.y:4:0:
-/usr/include/string.h:129:14: note: expected ‘const char * restrict’ but argument is of type ‘node_t * {aka struct node_t *}’
- extern char *strcat (char *__restrict __dest, const char *__restrict __src)
-              ^~~~~~
-structfe.y:266:58: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
-                                             $$ = s;}
-                                                          ^
-structfe.tab.c:1977:9: warning: implicit declaration of function ‘yyerror’; did you mean ‘yyerrok’? [-Wimplicit-function-declaration]
-structfe.y: At top level:
-structfe.y:367:1: warning: conflicting types for ‘yyerror’
- yyerror (char const *s)
- ^~~~~~~
-structfe.tab.c:1977:9: note: previous implicit declaration of ‘yyerror’ was here
+structfe.y:8:7: warning: conflicting types for built-in function ‘log2’ [-Wbuiltin-declaration-mismatch]
+  void log2 (char *msg)
+       ^~~~
+structfe.y: In function ‘yyparse’:
+structfe.y:125:50: warning: passing argument 2 of ‘build_uopr’ from incompatible pointer type [-Wincompatible-pointer-types]
+     $$ = build_uopr($1,$3);
+                                                  ^
+In file included from <command-line>:32:0:
+./tree.h:108:9: note: expected ‘node_t * {aka struct node_t *}’ but argument is of type ‘char *’
+ node_t *build_uopr(char *, node_t *);
+         ^~~~~~~~~~
+structfe.y:154:37: warning: passing argument 2 of ‘build_opr’ from incompatible pointer type [-Wincompatible-pointer-types]
+     $$ = build_opr("cast",$2,$4);}
+                                     ^
+In file included from <command-line>:32:0:
+./tree.h:107:9: note: expected ‘node_t * {aka struct node_t *}’ but argument is of type ‘char *’
+ node_t *build_opr(char *, node_t*, node_t*);
+         ^~~~~~~~~
+structfe.y:382:59: warning: passing argument 2 of ‘build_opr’ from incompatible pointer type [-Wincompatible-pointer-types]
+     $$ = build_opr("pointer_direct_declarator", $1,$2);}
+                                                           ^
+In file included from <command-line>:32:0:
+./tree.h:107:9: note: expected ‘node_t * {aka struct node_t *}’ but argument is of type ‘char *’
+ node_t *build_opr(char *, node_t*, node_t*);
+         ^~~~~~~~~
+structfe.y:386:59: warning: passing argument 2 of ‘build_opr’ from incompatible pointer type [-Wincompatible-pointer-types]
+     $$ = build_opr("pointer_direct_declarator", $1,$2);}
+                                                           ^
+In file included from <command-line>:32:0:
+./tree.h:107:9: note: expected ‘node_t * {aka struct node_t *}’ but argument is of type ‘char *’
+ node_t *build_opr(char *, node_t*, node_t*);
+         ^~~~~~~~~
+structfe.y:390:19: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
+     {$$ = $1;}
+                   ^
+structfe.y:435:66: warning: passing argument 2 of ‘build_opr’ from incompatible pointer type [-Wincompatible-pointer-types]
+   $$ = build_opr("direct_declarator__function_pointer",$1,leaf);}
+                                                                  ^
+In file included from <command-line>:32:0:
+./tree.h:107:9: note: expected ‘node_t * {aka struct node_t *}’ but argument is of type ‘char *’
+ node_t *build_opr(char *, node_t*, node_t*);
+         ^~~~~~~~~
+structfe.y:440:21: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
+     {$$ = build_leaf(TID,"*");}
+                     ^
+structfe.y:476:21: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
+   {$$ = $1;}
+                     ^
+structfe.y:478:21: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
+   {$$ = build_opr("type_name",$1,$2);}
+                     ^
+structfe.y:490:19: warning: assignment from incompatible pointer type [-Wincompatible-pointer-types]
+   {$$ = $1;}
+                   ^
+structfe.y:492:66: warning: passing argument 2 of ‘build_opr’ from incompatible pointer type [-Wincompatible-pointer-types]
+   {$$ = build_opr("abstract_declarator_with_pointer",$1,$2);}
+                                                                  ^
+In file included from <command-line>:32:0:
+./tree.h:107:9: note: expected ‘node_t * {aka struct node_t *}’ but argument is of type ‘char *’
+ node_t *build_opr(char *, node_t*, node_t*);
+         ^~~~~~~~~

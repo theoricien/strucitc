@@ -1,7 +1,7 @@
 struct x
 {
   int a;
-}
+};
 
 int main ()
 {
@@ -11,6 +11,6 @@ int main ()
   int *(*p3)();
   void *(*p4)();
   struct x *(*p5)();
-  
+
   return 0;
 }

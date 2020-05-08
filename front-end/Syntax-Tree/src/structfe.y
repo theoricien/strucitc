@@ -38,20 +38,26 @@
 
 %token IF ELSE WHILE FOR RETURN
 
-%type <string> IDENTIFIER CONSTANT SIZEOF PTR_OP LE_OP GE_OP L_OP G_OP EQ_OP NE_OP RB_OP LB_OP RETURN WHILE
-%type <string> AND_OP OR_OP unary_operator VOID INT
+%type <string> IDENTIFIER STRING_LITERAL CONSTANT SIZEOF PTR_OP LE_OP GE_OP L_OP G_OP EQ_OP NE_OP RETURN WHILE
+%type <string> AND_OP OR_OP unary_operator VOID INT pointer assignment_operator
+%type <string> MUL_ASSIGN DIV_ASSIGN ADD_ASSIGN SUB_ASSIGN type_name STRUCT
 
 %type <node> primary_expression postfix_expression argument_expression_list
 %type <node> unary_expression
 %type <node> additive_expression multiplicative_expression relational_expression
 %type <node> equality_expression logical_and_expression logical_or_expression
-%type <node> binary_expression expression declaration declaration_specifiers
-%type <node> type_specifier struct_specifier struct_declaration_list struct_declaration declarator direct_declarator
-%type <node> parameter_list parameter_declaration statement compound_statement declaration_list statement_list
+%type <node> expression declaration declaration_specifiers
+%type <node> type_specifier struct_declaration_list struct_declaration declarator direct_declarator
+%type <node> parameter_list parameter_declaration statement compound_statement declaration_list
 %type <node> expression_statement selection_statement iteration_statement jump_statement
-%type <node> program external_declaration function_definition
+%type <node> program external_declaration function_definition _start
+%type <node> cast_expression assignment_expression if_expression direct_declarator_pointer
+%type <node> block_item_list block_item init_declarator_list init_declarator initializer pointer_direct_declarator
+%type <node> struct_or_union_specifier specifier_qualifier_list struct_declarator_list struct_declarator
+%type <node> direct_declarator_function_pointer identifier_list abstract_declarator abstract_declarator_with_pointer
+%type <node> direct_abstract_declarator direct_abstract_declarator_pointer_free
 
-%start program
+%start _start
 %%
 
 primary_expression
@@ -78,24 +84,16 @@ postfix_expression
 
     | postfix_expression '(' ')'
     {log2("postfix_expression -> postfix_expression ( )");
-    $1->leaf->value = realloc($1->leaf->value, strlen($1->leaf->value) + 3);
-    strcat($1->leaf->value, "()");
-    $$ = $1;}
+    $$ = build_func($1,NULL);}
 
     | postfix_expression '(' argument_expression_list ')'
     {log2("postfix_expression -> postfix_expression ( argument_expression_list )");
-    //$1->leaf->value = realloc($1->leaf->value, strlen($1->leaf->value) + 3 + strlen($3->leaf->value));
-    strcat($1->leaf->value, "(");
-    //strcat($1->leaf->value, $3->leaf->value);
-    strcat($1->leaf->value, ")");
-    $$ = $1;}
+		$$ = build_func($1,$3);}
 
     | postfix_expression PTR_OP IDENTIFIER
     {log2("postfix_expression -> postfix_expression PTR_OP IDENTIFIER");
-    $1->leaf->value = realloc($1->leaf->value, strlen($1->leaf->value) + strlen($2) + 1 + strlen($3));
-    strcat($1->leaf->value, $2);
-    strcat($1->leaf->value, $3);
-    $$ = $1;}
+		node_t *leaf = build_leaf(TID,$3);
+    $$ = build_opr($2,$1,leaf);}
     ;
 
 argument_expression_list
@@ -105,10 +103,7 @@ argument_expression_list
 
     | argument_expression_list ',' assignment_expression
     {log2("argument_expression_list -> argument_expression_list , expression");
-    $1->leaf->value = realloc($1->leaf->value, strlen($1->leaf->value) + 3 + strlen($3->leaf->value));
-    strcat($1->leaf->value, ", ");
-    strcat($1->leaf->value, $3->leaf->value);
-    $$ = $1;}
+    $$ = build_opr("argument_expression_list",$1,$3);}
     ;
 
 unary_expression
@@ -122,22 +117,12 @@ unary_expression
 
     | SIZEOF '(' unary_expression ')'
     {log2("unary_expression -> SIZEOF ( unary_expression)");
-    char* s = malloc(strlen($1) + 3 + strlen($3->leaf->value));
-    strcat(s, $1);
-    strcat(s, "(");
-    strcat(s, $3->leaf->value);
-    strcat(s, ")");
-    $$ = build_leaf(TID,s);
+    $$ = build_uopr($1,$3);
     }
 
     | SIZEOF '(' type_name ')'
     {log2("unary_expression -> SIZEOF ( type_name )");
-    char* s = malloc(strlen($1) + 3 + strlen($3->leaf->value));
-    strcat(s, $1);
-    strcat(s, "(");
-    strcat(s, $3->leaf->value);
-    strcat(s, ")");
-    $$ = build_leaf(TID,s);
+    $$ = build_uopr($1,$3);
     }
     ;
 
@@ -165,6 +150,8 @@ cast_expression
     $$ = $1;}
 
     | '(' type_name ')' cast_expression
+		{log2("cast_expression -> '(' type_name ')' cast_expression");
+    $$ = build_opr("cast",$2,$4);}
   	;
 
 multiplicative_expression
@@ -259,7 +246,10 @@ assignment_expression
     // Ca sert a affecter un terme unaire
     // *ptr = a || b;
     // ptr->name = "aa";
+
     | unary_expression assignment_operator assignment_expression
+		{log2("assignment_expression -> unary_expression assignment_operator assignment_expression");
+    $$ = build_opr($2,$1,$3);}
     ;
 
 if_expression
@@ -269,11 +259,11 @@ if_expression
     ;
 
 assignment_operator
-    : '='
-    | MUL_ASSIGN
-    | DIV_ASSIGN
-    | ADD_ASSIGN
-    | SUB_ASSIGN
+    : '='					{log2("assignment_operator -> ="); $$ = "=";}
+    | MUL_ASSIGN 	{log2("assignment_operator -> MUL_ASSIGN"); $$ = $1;}
+    | DIV_ASSIGN 	{log2("assignment_operator -> DIV_ASSIGN"); $$ = $1;}
+    | ADD_ASSIGN 	{log2("assignment_operator -> ADD_ASSIGN"); $$ = $1;}
+    | SUB_ASSIGN 	{log2("assignment_operator -> SUB_ASSIGN"); $$ = $1;}
     ;
 
 expression
@@ -283,17 +273,17 @@ expression
 
     | expression ',' assignment_expression
     {log2("expression -> assignment_expression = expression");
-    $$ = build_opr(",",$1,$3);}
+    $$ = build_opr("expr",$1,$3);}
     ;
 
 declaration
     : declaration_specifiers init_declarator_list ';'
     {log2("declaration -> declaration_specifiers init_declarator_list ';'");
-    $$ = build_opr(";",$1,$2);}
+    $$ = build_opr("declaration",$1,$2);}
 
     | declaration_specifiers ';'
     {log2("declaration -> declaration_specifiers ';'");
-    $$ = build_opr(";",$1,$2);}
+    $$ = build_opr("declaration",$1,NULL);}
     ;
 
 declaration_specifiers
@@ -307,14 +297,17 @@ declaration_specifiers
 // int a, b, c = 4, d = 6, e;
 init_declarator_list
     : init_declarator
+		{$$ = $1;}
     | init_declarator_list ',' init_declarator
+		{$$ = build_opr("init_declarator_list",$1,$3);}
     ;
 
 init_declarator
     : declarator
-
+		{$$ = $1;}
     // Autorise la declaration durant la definition
     | declarator '=' initializer
+		{$$ = build_opr("=",$1,$3);}
     ;
 
 type_specifier
@@ -325,35 +318,50 @@ type_specifier
     {$$ = build_leaf(TT,$1);}
 
     | struct_or_union_specifier
+		{log2("type_specifier -> struct_or_union_specifier");
+		$$ = $1;}
     ;
 
 struct_or_union_specifier
     : STRUCT IDENTIFIER '{' struct_declaration_list '}'
+		{node_t *leaf = build_leaf(TID,$2);
+		$$ = build_struct(leaf,$4);}
     | STRUCT '{' struct_declaration_list '}'
+		{$$ = build_struct(NULL,$3);}
     | STRUCT IDENTIFIER
+		{node_t *leaf = build_leaf(TID,$2);
+		$$ = build_struct(leaf,NULL);}
     ;
 
 struct_declaration_list
     : struct_declaration
+		{$$ = $1;}
     | struct_declaration_list struct_declaration
+		{$$ = build_opr("struct_declaration_list",$1,$2);}
     ;
 
 struct_declaration
     : specifier_qualifier_list struct_declarator_list ';'
+		{$$ = build_opr("struct_declaration",$1,$2);}
     ;
 
 specifier_qualifier_list
     : type_specifier specifier_qualifier_list
+		{$$ = build_opr("specifier_qualifier_list",$1,$2);}
     | type_specifier
+		{$$ = $1;}
     ;
 
 struct_declarator_list
     : struct_declarator
+		{$$ = $1;}
     | struct_declarator_list ',' struct_declarator
+		{$$ = build_opr("struct_declarator_list",$1,$3);}
     ;
 
 struct_declarator
     : declarator
+		{$$ = $1;}
     ;
 
 declarator
@@ -371,10 +379,11 @@ pointer_direct_declarator
     // int *aaaaaa
     : pointer direct_declarator_function_pointer
     {log2("pointer_direct_declarator -> pointer direct_declarator_function_pointer");
-    char* s = malloc(strlen($1) + strlen($2) + 1);
-    strcat(s, $1);
-    strcat(s, $2);
-    $$ = s;}
+    $$ = build_opr("pointer_direct_declarator", $1,$2);}
+
+		|pointer direct_declarator_pointer
+		{log2("pointer_direct_declarator -> pointer direct_declarator_pointer");
+    $$ = build_opr("pointer_direct_declarator", $1,$2);}
 
     // int *
     | pointer
@@ -383,39 +392,52 @@ pointer_direct_declarator
 
 direct_declarator
     : IDENTIFIER
-    {$$ = build_leaf(TID,$1);}
-
+    {log2("direct_declarator -> IDENTIFIER");
+		log2($1);
+		$$ = build_leaf(TID,$1);}
     | '(' declarator ')'
+		{$$ = $2;}
     | direct_declarator '(' parameter_list ')'
+		{$$ = build_func($1,$3);}
     | direct_declarator '(' identifier_list ')'
+		{$$ = build_func($1,$3);}
     | direct_declarator '(' ')'
+		{$$ = build_func($1,NULL);}
     ;
 
 direct_declarator_pointer
     : IDENTIFIER
-    {$$ = build_leaf(TID,$1);}
+    {$$ = build_leaf(TID, $1);}
 
     // int (b)
     | '(' declarator ')'
+		{$$ = $2;}
 
     // Function pointer
     // int ( *b ) ( arguments )
     | '(' pointer_direct_declarator ')' '(' parameter_list ')'
+		{$$ = build_func($2,$5);}
     | '(' pointer_direct_declarator ')' '(' ')'
+		{$$ = build_func($2,NULL);}
 
     // fonction: int foo ( arguments );
     | direct_declarator_pointer '(' parameter_list ')'
+		{$$ = build_func($1,$3);}
     | direct_declarator_pointer '(' identifier_list ')'
+		{$$ = build_func($1,$3);}
     | direct_declarator_pointer '(' ')'
+		{$$ = build_func($1,NULL);}
     ;
 
 direct_declarator_function_pointer
     : pointer IDENTIFIER
+		{node_t *leaf = build_leaf(TID,$2);
+		$$ = build_opr("direct_declarator__function_pointer",$1,leaf);}
     ;
 
 pointer
     : '*'
-    {$$ = $1;}
+    {$$ = build_leaf(TID,"*");}
     ;
 
 parameter_list
@@ -423,38 +445,51 @@ parameter_list
     {$$ = $1;}
 
     | parameter_list ',' parameter_declaration
+		{$$ = build_opr("parameter_list",$1,$3);}
     ;
 
 // Parameters of func ptr / func
 parameter_declaration
     // int *a,
     : declaration_specifiers declarator
+		{$$ = build_opr("parameter_declaration",$1,$2);}
 
     // int *,
     | declaration_specifiers abstract_declarator
+		{$$ = build_opr("parameter_declaration",$1,$2);}
 
     // int
     | declaration_specifiers
+		{$$ = $1;}
     ;
 
 identifier_list
     : IDENTIFIER
+		{$$ = build_leaf(TID,$1);}
     | identifier_list ',' IDENTIFIER
+		{node_t *leaf = build_leaf(TID,$3);
+		$$ = build_opr("identifier_list",$1,leaf);}
     ;
 
 type_name
     : specifier_qualifier_list
+		{$$ = $1;}
     | specifier_qualifier_list abstract_declarator
+		{$$ = build_opr("type_name",$1,$2);}
     ;
 
 abstract_declarator
     : abstract_declarator_with_pointer
+		{$$ = $1;}
     | direct_abstract_declarator
+		{$$ = $1;}
     ;
 
 abstract_declarator_with_pointer
     : pointer
+		{$$ = $1;}
     | pointer direct_abstract_declarator_pointer_free
+		{$$ = build_opr("abstract_declarator_with_pointer",$1,$2);}
 
 direct_abstract_declarator
     : '(' abstract_declarator ')'
@@ -473,7 +508,7 @@ direct_abstract_declarator_pointer_free
     ;
 
 initializer
-    : assignment_expression
+    : assignment_expression {$$ = $1;}
     ;
 
 statement
@@ -500,11 +535,10 @@ statement
 
 // Body d'une declaration
 compound_statement
-    : '{' '}'
+    : '{' '}' {$$ = build_leaf(TID,"{}");}
     | '{' block_item_list '}'
     {$$ = $2;}
-
-    | ';'
+    | ';'			{$$ = build_leaf(TID,";");}
     ;
 
 block_item_list
@@ -512,6 +546,7 @@ block_item_list
     {$$ = $1;}
 
     | block_item_list block_item
+		{$$ = build_opr("block_item_list",$1,$2);}
     ;
 
 // block_item est juste une suite de declaration
@@ -525,7 +560,7 @@ block_item
     ;
 
 expression_statement
-    : ';'
+    : ';' {$$ = build_leaf(TID,";");}
     | expression ';'
     {$$ = $1;}
     ;
@@ -583,37 +618,41 @@ jump_statement
 program
     : external_declaration
     {log2("program -> external_declaration");
-    $$ = $1;}
+		$$ = $1;}
 
     | program external_declaration
+		{$$ = build_opr("program",$1,$2);}
     ;
+
+_start
+	:program
+	{stringify($1,0);}
+
 
 // Une suite de declaration de definitions de fonctions
 external_declaration
-    : function_definition external_declaration
+
+    : function_definition
     {log2("external_declaration -> function_definition");
     $$ = $1;}
 
-    | declaration external_declaration
+    | declaration
     {log2("external_declaration -> declaration");
     $$ = $1;}
-
-    | %empty
     ;
 
 function_definition
-    : declaration_specifiers declarator declaration_list compound_statement
-    {stringify($4,0);}
 
-    | declaration_specifiers declarator compound_statement
-    {stringify($3,0);}
+    : declaration_specifiers declarator compound_statement
+		{$$ = build_opr("function_definition",build_opr("function",$1,$2),$3);}
     ;
 
 declaration_list
     : declaration
     {$$ = $1;}
-  
+
     | declaration_list declaration
+		{build_opr("declaration_list",$1,$2);}
     ;
 
 

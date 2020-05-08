@@ -1,8 +1,9 @@
 #ifndef _TREE_H
 #define _TREE_H
 
-// types : constant, identifers, operators, unary operator, statement, declarator type, if, for loop, return
-typedef enum {TCONS, TID, TOP, TUOP, TS, TD, TT, TIF, TFOR, TRET} type_t;
+// types : constant, identifers, operators, unary operator, statement, declarator type, type types, if,
+//for loop, return, function, struct
+typedef enum {TCONS, TID, TOP, TUOP, TS, TD, TT, TIF, TFOR, TRET, TFUNC, TSTRUCT} type_t;
 
 /// Un noeud pour chaque type:
 
@@ -28,11 +29,17 @@ struct uopr_t
 };
 
 //statement and declarator list
+//struct list_t
+//{
+//  char *context;
+//  struct node_t *current;
+//  struct node_t *next;
+//};
+
 struct list_t
 {
-  char *context;
   struct node_t *current;
-  struct node_t *next;
+  struct list_t * next;
 };
 
 struct if_t
@@ -50,6 +57,23 @@ struct for_t
   struct node_t *do_statement;
 };
 
+struct func_t
+{
+  struct node_t *name;
+  struct node_t *arguments;
+};
+
+struct abstract_t{
+  struct node_t *ret_type;
+  struct node_t *arguments;
+};
+
+struct struct_t
+{
+  struct node_t *name;
+  struct node_t *struct_declaration;
+};
+
 
 struct node_t
 {
@@ -59,9 +83,10 @@ struct node_t
     struct pexpr_t *leaf; // les constantes et idenfiers sont des terminaux
     struct opr_t *opr;
     struct uopr_t *uopr;
-    struct list_t *list;
+    struct struct_t *struct_node;
     struct if_t *if_node;
     struct for_t *for_loop;
+    struct func_t *function;
   };
 
 };
@@ -72,6 +97,8 @@ typedef struct uopr_t uopr_t;
 typedef struct list_t list_t;
 typedef struct if_t if_t;
 typedef struct for_t for_t;
+typedef struct func_t func;
+typedef struct struct_t struct_t;
 
 
 typedef struct node_t node_t;
@@ -79,7 +106,11 @@ typedef struct node_t node_t;
 node_t *build_leaf(type_t, char*);
 node_t *build_opr(char *, node_t*, node_t*);
 node_t *build_uopr(char *, node_t *);
-node_t *build_list(type_t, char *, node_t *, node_t *);
+//node_t *build_list(type_t, char *, node_t *, node_t *);
+node_t *build_func(node_t *,node_t*);
+list_t *build_arg_list(node_t*);
+list_t *add_arg_list(list_t*,list_t*);
+node_t *build_struct(node_t *, node_t *);
 node_t *build_if(node_t *, node_t *, node_t *);
 node_t *build_for(node_t *, node_t *, node_t *, node_t *);
 

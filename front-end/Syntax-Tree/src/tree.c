@@ -69,7 +69,7 @@ struct node_t *build_uopr(char* op, struct node_t *operand){
 
 }
 
-
+/**
 struct node_t *build_list(type_t type, char* context, struct node_t *current, struct node_t *next){
 
   struct node_t *tmp = (struct node_t *)malloc(sizeof (struct node_t));
@@ -87,7 +87,7 @@ struct node_t *build_list(type_t type, char* context, struct node_t *current, st
   return tmp;
 
 }
-
+**/
 
 
 struct node_t *build_if(struct node_t *condition, struct node_t *if_true, struct node_t *if_false){
@@ -129,6 +129,77 @@ struct node_t *build_for(struct node_t *start, struct node_t *end, struct node_t
 
 }
 
+node_t *build_func(node_t *func_name, node_t *arguments){
+
+  struct node_t *tmp = (struct node_t *)malloc(sizeof (struct node_t));
+  assert (tmp != NULL);
+
+  //assert(func_name->type == TCONS || func_name->type == TID);
+  tmp->type = TFUNC;
+
+  tmp->function = (struct func_t *)malloc(sizeof (struct func_t));
+  assert (tmp->function != NULL);
+
+  tmp->function->name = func_name;
+  if(arguments == NULL){
+    tmp->function->arguments = build_leaf(TT,"void");
+  }
+  else{
+    tmp->function->arguments = arguments;
+  }
+
+  return tmp;
+
+}
+
+node_t *build_struct(node_t * name, node_t * struct_body){
+
+  struct node_t *tmp = (struct node_t *)malloc(sizeof (struct node_t));
+  assert (tmp != NULL);
+
+  //assert(func_name->type == TCONS || func_name->type == TID);
+  tmp->type = TSTRUCT;
+
+  tmp->struct_node = (struct struct_t *)malloc(sizeof (struct struct_t));
+  assert (tmp->function != NULL);
+
+  tmp->struct_node->name = name;;
+  tmp->struct_node->struct_declaration = struct_body;
+
+  return tmp;
+}
+
+list_t *build_arg_list(node_t* argument){
+
+  struct list_t *new_list = (struct list_t *)malloc(sizeof(list_t) + 1);
+  new_list->current = argument;
+  new_list->next = NULL;
+
+  return new_list;
+}
+
+// Pour argument_expression_list ',' assignment_expression
+list_t *add_arg_list(list_t *argument ,list_t *list){
+
+  struct list_t *new_list = (struct list_t *)malloc(sizeof(list_t) + 1);
+  new_list->current = argument->current;
+  new_list->next = NULL;
+
+  if(list->next != NULL){
+
+    list_t *tmp = list->next;
+
+    while(tmp->next != NULL){
+      tmp = tmp->next;
+    }
+    tmp->next = new_list;
+  }
+  else{
+    list->next = new_list;
+  }
+  return list;
+
+}
 
 
 void print_tab(int n){
@@ -157,21 +228,9 @@ void stringify(node_t * tree, int tab){
   else if(tree->type == TOP){
     printf("(%s : %s\n","TOP",tree->opr->optype);
     stringify(tree->opr->left, tab + 4);
-    stringify(tree->opr->right, tab + 4);
-    print_tab(tab);
-    printf(")\n");
-  }
-  else if(tree->type == TS){
-    printf("(%s : %s\n","TS",tree->list->context);
-    stringify(tree->list->current, tab + 4);
-    stringify(tree->list->next, tab + 4);
-    print_tab(tab);
-    printf(")\n");
-  }
-  else if(tree->type == TD){
-    printf("(%s : %s\n","TD",tree->list->context);
-    stringify(tree->list->current, tab + 4);
-    stringify(tree->list->next, tab + 4);
+    if(tree->opr->right != NULL){
+      stringify(tree->opr->right, tab + 4);
+    }
     print_tab(tab);
     printf(")\n");
   }
@@ -199,6 +258,24 @@ void stringify(node_t * tree, int tab){
   }
   else if(tree->type == TRET){
     printf("(%s : %s) \n","TID",tree->leaf->value);
+  }
+  else if(tree->type == TFUNC){
+    printf("(%s :\n","TFUNC");
+    stringify(tree->function->name, tab + 4);
+    stringify(tree->function->arguments, tab + 4);
+    print_tab(tab);
+    printf(")\n");
+  }
+  else if(tree->type == TSTRUCT){
+    printf("(%s :\n","TSTRUCT");
+    if(tree->struct_node->name != NULL){
+      stringify(tree->struct_node->name, tab + 4);
+    }
+    if(tree->struct_node->struct_declaration != NULL){
+      stringify(tree->struct_node->struct_declaration, tab + 4);
+    }
+    print_tab(tab);
+    printf(")\n");
   }
   else{
     printf("%s : %d\n","unknown error", tree->type);
