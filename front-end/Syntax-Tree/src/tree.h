@@ -4,13 +4,14 @@
 // types : constant, identifers, operators, unary operator, statement, declarator type, type types, if,
 //for loop, return, function, struct
 typedef enum {TCONS, TID, TOP, TUOP, TS, TD, TT, TIF, TFOR, TRET, TFUNC, TSTRUCT} type_t;
-
+typedef enum {TINT,TVOID,TNULL} type_spe;
 /// Un noeud pour chaque type:
 
 //constantes et identifiers
 struct pexpr_t
 {
   char* value;
+
 }; // primary expression type
 
 //operators
@@ -27,14 +28,6 @@ struct uopr_t
   char *optype;
   struct node_t *operand;
 };
-
-//statement and declarator list
-//struct list_t
-//{
-//  char *context;
-//  struct node_t *current;
-//  struct node_t *next;
-//};
 
 struct list_t
 {
@@ -91,6 +84,16 @@ struct node_t
 
 };
 
+struct decl{
+  type_spe type;
+  char* name;
+};
+
+struct declarations{
+  struct decl *current;
+  struct declarations *next;
+};
+
 typedef struct pexpr_t pexpr_t;
 typedef struct opr_t opr_t;
 typedef struct uopr_t uopr_t;
@@ -99,6 +102,8 @@ typedef struct if_t if_t;
 typedef struct for_t for_t;
 typedef struct func_t func;
 typedef struct struct_t struct_t;
+typedef struct declarations declarations;
+typedef struct decl decl;
 
 
 typedef struct node_t node_t;
@@ -114,6 +119,12 @@ node_t *build_struct(node_t *, node_t *);
 node_t *build_if(node_t *, node_t *, node_t *);
 node_t *build_for(node_t *, node_t *, node_t *, node_t *);
 
+int is_already_declared(char*, declarations *);
+type_spe get_variable_type(char* , declarations *);
+void add_declaration(node_t *, node_t *, declarations *);
+type_spe get_type_node(node_t *, declarations *);
+void check_all_types(node_t *);
+void check_type(node_t *, declarations *);
 
 void stringify(node_t *, int);
 

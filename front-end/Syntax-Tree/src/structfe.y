@@ -627,7 +627,8 @@ program
 
 _start
 	:program
-	{stringify($1,0);}
+	{stringify($1,0);
+	check_all_types($1);}
 
 
 // Une suite de declaration de definitions de fonctions

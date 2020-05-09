@@ -490,8 +490,8 @@ static const yytype_uint16 yyrline[] =
      490,   492,   496,   497,   498,   499,   500,   504,   505,   506,
      507,   508,   512,   516,   520,   524,   528,   532,   539,   540,
      542,   546,   549,   556,   559,   564,   565,   570,   574,   580,
-     586,   593,   599,   604,   610,   614,   620,   624,   629,   636,
-     640,   647
+     586,   593,   599,   604,   610,   614,   620,   624,   629,   637,
+     641,   648
 };
 #endif
 
@@ -2310,32 +2310,33 @@ yyreduce:
 
   case 138:
 #line 630 "structfe.y" /* yacc.c:1646  */
-    {stringify((yyvsp[0].node),0);}
-#line 2315 "structfe.tab.c" /* yacc.c:1646  */
+    {stringify((yyvsp[0].node),0);
+	check_all_types((yyvsp[0].node));}
+#line 2316 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 139:
-#line 637 "structfe.y" /* yacc.c:1646  */
+#line 638 "structfe.y" /* yacc.c:1646  */
     {log2("external_declaration -> function_definition");
     (yyval.node) = (yyvsp[0].node);}
-#line 2322 "structfe.tab.c" /* yacc.c:1646  */
+#line 2323 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 140:
-#line 641 "structfe.y" /* yacc.c:1646  */
+#line 642 "structfe.y" /* yacc.c:1646  */
     {log2("external_declaration -> declaration");
     (yyval.node) = (yyvsp[0].node);}
-#line 2329 "structfe.tab.c" /* yacc.c:1646  */
+#line 2330 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
   case 141:
-#line 648 "structfe.y" /* yacc.c:1646  */
+#line 649 "structfe.y" /* yacc.c:1646  */
     {(yyval.node) = build_opr("function_definition",build_opr("function",(yyvsp[-2].node),(yyvsp[-1].node)),(yyvsp[0].node));}
-#line 2335 "structfe.tab.c" /* yacc.c:1646  */
+#line 2336 "structfe.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2339 "structfe.tab.c" /* yacc.c:1646  */
+#line 2340 "structfe.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2563,7 +2564,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 660 "structfe.y" /* yacc.c:1906  */
+#line 661 "structfe.y" /* yacc.c:1906  */
 
 
 extern FILE *yyin;
