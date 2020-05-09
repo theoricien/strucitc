@@ -9,7 +9,7 @@ assert (int 	expr,
 {
 	if (!expr)
 	{
-		fprintf(stderr, "%s", msg);
+		fprintf(stderr, "[AssertionError]: %s\n", msg);
 		exit(2);
 	}
 }

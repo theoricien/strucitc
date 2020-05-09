@@ -19,6 +19,7 @@ main (void)
     for (size_t i = 0; i < sizeof(tests) / sizeof(*(tests)); i++)
         tests[i]();
 
+    printf("Success");
     return EXIT_SUCCESS;
 }
 
