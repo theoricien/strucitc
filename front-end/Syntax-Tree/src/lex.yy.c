@@ -525,7 +525,13 @@ char *yytext;
 #line 2 "ANSI-C.l"
 #include <stdio.h>
 #include "y.tab.h"
+#include <errno.h>
 int verbose = 0;
+
+extern int line_count;
+extern int column_count;
+extern char line_buffer[1000];
+extern int buffer_count;
 
 void log (char *msg)
 {
@@ -535,8 +541,8 @@ void log (char *msg)
 /* Ne gere pas les commentaires. A rajouter */
 /* Supprimer les lignes dont vous n'avez pas besoin. */
 
-#line 539 "lex.yy.c"
-#line 540 "lex.yy.c"
+#line 545 "lex.yy.c"
+#line 546 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -753,10 +759,10 @@ YY_DECL
 		}
 
 	{
-#line 24 "ANSI-C.l"
+#line 30 "ANSI-C.l"
 
 
-#line 760 "lex.yy.c"
+#line 766 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -816,263 +822,263 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 26 "ANSI-C.l"
+#line 32 "ANSI-C.l"
 ;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 28 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return EXTERN;}
+#line 34 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return EXTERN;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 29 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return STRUCT;}
+#line 35 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return STRUCT;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 30 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return IF;}
+#line 36 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return IF;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 31 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return ELSE;}
+#line 37 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return ELSE;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 32 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return WHILE;}
+#line 38 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return WHILE;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 33 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return FOR;}
+#line 39 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return FOR;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 34 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return INT;}
+#line 40 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return INT;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 35 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return VOID;}
+#line 41 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return VOID;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 36 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return RETURN;}
+#line 42 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return RETURN;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 37 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return SIZEOF;}
+#line 43 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return SIZEOF;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 39 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return IDENTIFIER;}
+#line 45 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return IDENTIFIER;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 41 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return CONSTANT;}
+#line 47 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return CONSTANT;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 42 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return CONSTANT;}
+#line 48 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return CONSTANT;}
 	YY_BREAK
 case 15:
 /* rule 15 can match eol */
 YY_RULE_SETUP
-#line 43 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return CONSTANT;}
+#line 49 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return CONSTANT;}
 	YY_BREAK
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 45 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return(STRING_LITERAL);}
+#line 51 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return(STRING_LITERAL);}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 47 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return(ADD_ASSIGN); }
+#line 53 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return(ADD_ASSIGN); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 48 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return(SUB_ASSIGN); }
+#line 54 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return(SUB_ASSIGN); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 49 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return(MUL_ASSIGN); }
+#line 55 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return(MUL_ASSIGN); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 50 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return(DIV_ASSIGN); }
+#line 56 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return(DIV_ASSIGN); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 52 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return LE_OP;}
+#line 58 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return LE_OP;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 53 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return GE_OP;}
+#line 59 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return GE_OP;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 54 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return G_OP;}
+#line 60 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return G_OP;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 55 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return L_OP;}
+#line 61 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return L_OP;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 56 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return EQ_OP;}
+#line 62 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return EQ_OP;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 57 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return NE_OP;}
+#line 63 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return NE_OP;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 59 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return PTR_OP;}
+#line 65 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return PTR_OP;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 61 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return AND_OP;}
+#line 67 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return AND_OP;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 62 "ANSI-C.l"
-{log(yytext);yylval.string = strdup(yytext);return OR_OP;}
+#line 68 "ANSI-C.l"
+{count();log(yytext);yylval.string = strdup(yytext);return OR_OP;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 64 "ANSI-C.l"
-{log(&yytext[0]); return(';'); }
+#line 70 "ANSI-C.l"
+{count();log(&yytext[0]); return(';'); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 65 "ANSI-C.l"
-{log(&yytext[0]); return('{'); }
+#line 71 "ANSI-C.l"
+{count();log(&yytext[0]); return('{'); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 66 "ANSI-C.l"
-{log(&yytext[0]); return('}'); }
+#line 72 "ANSI-C.l"
+{count();log(&yytext[0]); return('}'); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 67 "ANSI-C.l"
-{log(&yytext[0]); return(','); }
+#line 73 "ANSI-C.l"
+{count();log(&yytext[0]); return(','); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 68 "ANSI-C.l"
-{log(&yytext[0]); return(':'); }
+#line 74 "ANSI-C.l"
+{count();log(&yytext[0]); return(':'); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 69 "ANSI-C.l"
-{log(&yytext[0]); return('='); }
+#line 75 "ANSI-C.l"
+{count();log(&yytext[0]); return('='); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 70 "ANSI-C.l"
-{log(&yytext[0]); return('('); }
+#line 76 "ANSI-C.l"
+{count();log(&yytext[0]); return('('); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 71 "ANSI-C.l"
-{log(&yytext[0]); return(')'); }
+#line 77 "ANSI-C.l"
+{count();log(&yytext[0]); return(')'); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 72 "ANSI-C.l"
-{log(&yytext[0]); return('&'); }
+#line 78 "ANSI-C.l"
+{count();log(&yytext[0]); return('&'); }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 73 "ANSI-C.l"
-{log(&yytext[0]); return('~'); }
+#line 79 "ANSI-C.l"
+{count();log(&yytext[0]); return('~'); }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 74 "ANSI-C.l"
-{log(&yytext[0]); return('-'); }
+#line 80 "ANSI-C.l"
+{count();log(&yytext[0]); return('-'); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 75 "ANSI-C.l"
-{log(&yytext[0]); return('+'); }
+#line 81 "ANSI-C.l"
+{count();log(&yytext[0]); return('+'); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 76 "ANSI-C.l"
-{log(&yytext[0]); return('*'); }
+#line 82 "ANSI-C.l"
+{count();log(&yytext[0]); return('*'); }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 77 "ANSI-C.l"
-{log(&yytext[0]); return('/'); }
+#line 83 "ANSI-C.l"
+{count();log(&yytext[0]); return('/'); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 79 "ANSI-C.l"
-{log(" ");}
+#line 85 "ANSI-C.l"
+{count();log(" ");}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 80 "ANSI-C.l"
-{log("\t");}
+#line 86 "ANSI-C.l"
+{count();log("\t");}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 81 "ANSI-C.l"
-{log("\v");}
+#line 87 "ANSI-C.l"
+{count();log("\v");}
 	YY_BREAK
 case 47:
 /* rule 47 can match eol */
 YY_RULE_SETUP
-#line 82 "ANSI-C.l"
-{log("\n");}
+#line 88 "ANSI-C.l"
+{count();log("\n");}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 83 "ANSI-C.l"
-{log("\f");}
+#line 89 "ANSI-C.l"
+{count();log("\f");}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 84 "ANSI-C.l"
-{log("\r");}
+#line 90 "ANSI-C.l"
+{count();log("\r");}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 85 "ANSI-C.l"
+#line 91 "ANSI-C.l"
 {return yytext[0];}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 86 "ANSI-C.l"
+#line 92 "ANSI-C.l"
 ECHO;
 	YY_BREAK
-#line 1076 "lex.yy.c"
+#line 1082 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2077,6 +2083,49 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 86 "ANSI-C.l"
+#line 92 "ANSI-C.l"
 
+
+void count()
+{
+	int i;
+
+	for (i = 0; yytext[i] != '\0'; i++){
+		if (yytext[i] == '\n'){
+			column_count = 1;
+      line_count ++;
+    }
+		else if (yytext[i] == '\t'){
+			column_count += 8 - (column_count % 8);
+		}else{
+			column_count++;
+    }
+ }
+}
+
+void get_nth_line (FILE *file, int n, char **s)
+{
+    char line[1024];
+    int curr_line = 0;
+    fseek(file,0L,SEEK_SET);
+    while (fgets(line,1024,file) != NULL)
+    {
+        strtok(line,"\n");
+        strtok(line,"\t");
+        if (curr_line == n)
+        {
+            char *l = malloc(1024);
+            int j = 0;
+            printf("%d\n",l[j]);
+            strcpy(l,line);
+            while(l[j] == '\t'){
+              j++;
+            }
+            *s = &l[j];
+            return;
+        }
+        else
+            curr_line++;
+    }
+}
 

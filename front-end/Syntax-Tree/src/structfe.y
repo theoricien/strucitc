@@ -4,6 +4,10 @@
 	#include "tree.h"
 
 	int verbose2 = 0;
+	int line_count = 1;
+	int column_count = 1;
+	char line_buffer[1000];
+	int buffer_count = 0;
 
 	void log2 (char *msg)
 	{
@@ -377,11 +381,8 @@ declarator
 // Pour ne pas permettre plusieur pointeurs
 pointer_direct_declarator
     // int *aaaaaa
-    : pointer direct_declarator_function_pointer
-    {log2("pointer_direct_declarator -> pointer direct_declarator_function_pointer");
-    $$ = build_opr("pointer_direct_declarator", $1,$2);}
 
-		|pointer direct_declarator_pointer
+		:pointer direct_declarator_pointer
 		{log2("pointer_direct_declarator -> pointer direct_declarator_pointer");
     $$ = build_opr("pointer_direct_declarator", $1,$2);}
 
@@ -660,16 +661,22 @@ declaration_list
 
 extern FILE *yyin;
 
+char *fname;
+
 void
 yyerror (char const *s)
 {
-	fprintf(stderr, "%s\n", s);
+	FILE* fd = fopen(fname,"r");
+	char *code_line;
+	get_nth_line(fd,line_count - 1,&code_line);
+	printf("line %d: %s\n%*s\n%*s\n",line_count,code_line, column_count, "^", column_count, s);
 	exit(2);
 }
 
 int
 main (int argc, char *argv[])
 {
+	fname = strdup(argv[1]);
 	if ((yyin = fopen(argv[1], "r")) == NULL)
 	{
 		yyerror("[E] File not found\n");
