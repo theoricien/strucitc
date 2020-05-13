@@ -5,7 +5,7 @@ EXEC=strucitfe
 all: $(EXEC)
 
 strucitfe: lex.yy.c y.tab
-	$(CC) -o $(EXEC) lex.yy.c tree.c y.tab.c -include tree.h $(CFLAGS)
+	$(CC) -o $(EXEC) lex.yy.c tree.c symbol_table.c y.tab.c -include tree.h symbol_table.h $(CFLAGS)
 
 lex.yy.c:
 	flex ANSI-C.l

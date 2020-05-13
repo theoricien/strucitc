@@ -628,7 +628,7 @@ program
 _start
 	:program
 	{stringify($1,0);
-	check_all_types($1);}
+	build_symbol_table($1);}
 
 
 // Une suite de declaration de definitions de fonctions
@@ -657,7 +657,7 @@ declaration_list
 		{build_opr("declaration_list",$1,$2);}
     ;
 
-
+//iterable et external
 %%
 
 extern FILE *yyin;

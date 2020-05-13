@@ -1,4 +1,5 @@
 #include "tree.h"
+#include "symbol_table.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -181,148 +182,7 @@ list_t *add_arg_list(list_t *argument ,list_t *list){
 
 }
 
-/**
-* return 1 if already declared, 0 if not
-**/
-int is_already_declared(char* name, declarations *declaration_list){
-
-  int debug = 1;
-
-  if(declaration_list->current != NULL){
-    if(declaration_list->current->name !=NULL){
-      //if(debug){printf("%s\n",declaration_list->current->name);}
-      if(!strcmp(name,declaration_list->current->name)){
-        return 1;
-      }
-    }
-  }
-  if(declaration_list->next !=NULL){
-    declarations *tmp = declaration_list;
-    while(tmp !=NULL){
-      if(!strcmp(name,tmp->current->name)){
-        return 1;
-      }
-      tmp = tmp->next;
-    }
-  }
-  return 0; // not found
-}
-
-type_spe get_variable_type(char* name, declarations *declaration_list){
-  if(declaration_list->current->name !=NULL){
-    if(!strcmp(name,declaration_list->current->name)){
-      return declaration_list->current->type;
-    }
-  }
-  if(declaration_list->next !=NULL){
-    declarations *tmp = declaration_list;
-    while(tmp->next !=NULL){
-      if(!strcmp(name,tmp->current->name)){
-        return tmp->current->type;
-      }
-      tmp = tmp->next;
-    }
-  }
-  return TNULL; // not found
-}
-
-/**
-* Handle multiple declarations
-**/
-
-void add_declaration(node_t *type_node, node_t *name, declarations *declaration_list){
-
-  decl *new_declaration = (decl*) malloc(sizeof(struct decl)+1);
-
-  //Build new declaration: add declaration name (right node of opr)
-  // /!\ not especially a leaf
-  // Doing this first because of the return if name already exists
-  if(name->type == TID){
-    if(!is_already_declared(name->leaf->value,declaration_list)){
-      new_declaration->name = (char *)malloc(strlen(name->leaf->value) + 1);
-      assert (new_declaration->name != NULL);
-      strcpy(new_declaration->name, name->leaf->value);
-    }
-    else{
-      printf("Error: %s is already declared \n",name->leaf->value);
-      return;
-    }
-  }
-  // A modifier pour avoir plusieurs top à la suite... TODO
-  else if(name->type == TOP){ // non terminal
-
-    if(is_already_declared(name->opr->left->leaf->value,declaration_list) == 0){
-      new_declaration->name = (char *)malloc(strlen(name->opr->left->leaf->value) + 1);
-      assert (new_declaration->name != NULL);
-      strcpy(new_declaration->name, name->opr->left->leaf->value);
-    }
-    else{
-      printf("Error: %s is already declared \n",name->opr->left->leaf->value);
-      return;
-    }
-  }
-
-  // add type (left node of opr)
-  if(type_node->type == TID){
-    if(!strcmp(type_node->leaf->value,"int")){
-      new_declaration->type = TINT;
-    }
-    else{
-      new_declaration->type = TVOID;
-    }
-  }
-
-  //add the new declaration to our list
-  if(declaration_list->current == NULL){
-    declaration_list->current = new_declaration;
-  }
-  else if(declaration_list->next == NULL){
-    declarations *new_declaration_list = (declarations*) malloc(sizeof(struct declarations));
-    new_declaration_list->current = new_declaration;
-    new_declaration_list->next = NULL;
-    declaration_list->next = new_declaration_list;
-  }
-  else{
-    declarations *new_declaration_list = (declarations*) malloc(sizeof(struct declarations));
-    new_declaration_list->current = new_declaration;
-    new_declaration_list->next = NULL;
-
-    declarations *tmp = declaration_list->next;
-    while(tmp->next != NULL){
-      tmp = tmp->next;
-    }
-    tmp->next = new_declaration_list;
-  }
-
-}
-
-/**
-* Retourne le type d'un noeud. Si le type est contradictoire , retourne TNULL
-**/
-
-type_spe get_type_node(node_t *tree, declarations *declaration_list){
-
-  if(tree->type == TOP){
-    if(get_type_node(tree->opr->left,declaration_list) == get_type_node(tree->opr->right,declaration_list)){
-      return get_type_node(tree->opr->left,declaration_list);
-    }
-    else{
-      return TNULL;
-    }
-  }
-  else if(tree->type == TID){
-    if(is_already_declared(tree->leaf->value,declaration_list)){
-      return TINT;
-    }
-    else{
-      return TNULL;
-    }
-  }
-  else if(tree->type == TCONS){
-    return TINT;
-  }
-  return TNULL;
-}
+/*
 
 void check_all_types(node_t *tree){
 
@@ -393,7 +253,7 @@ void check_type(node_t *tree, declarations *declaration_list){
     }
     else if(!strcmp(tree->opr->optype,"declaration")){
       if(get_type_node(tree->opr->left,declaration_list) != TINT){
-        //TODO 
+        //TODO
       }
       else{
         add_declaration(tree->opr->left,tree->opr->right,declaration_list);
@@ -412,12 +272,12 @@ void check_type(node_t *tree, declarations *declaration_list){
       ;
     }
   }
-  /*
+
   if(errors != 0){
     printf("typecheck failed with %d errors \n",errors);
-  }*/
+  }
 }
-
+*/
 
 void print_tab(int n){
   for(int i = 0; i < n; i++){

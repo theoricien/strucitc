@@ -2311,7 +2311,7 @@ yyreduce:
   case 138:
 #line 630 "structfe.y" /* yacc.c:1646  */
     {stringify((yyvsp[0].node),0);
-	check_all_types((yyvsp[0].node));}
+	build_symbol_table((yyvsp[0].node));}
 #line 2316 "structfe.tab.c" /* yacc.c:1646  */
     break;
 

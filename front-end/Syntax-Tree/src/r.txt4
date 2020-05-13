@@ -50,9 +50,9 @@ ANSI-C.l:34:2: note: previous implicit declaration of ‘count’ was here
  "extern"                {count();log(yytext);yylval.string = strdup(yytext);return EXTERN;}
   ^~~~~
 symbol_table.c: In function ‘print_block’:
-symbol_table.c:274:26: warning: passing argument 1 of ‘print_declaration_list’ from incompatible pointer type [-Wincompatible-pointer-types]
-   print_declaration_list(block);
-                          ^~~~~
+symbol_table.c:275:28: warning: passing argument 1 of ‘print_declaration_list’ from incompatible pointer type [-Wincompatible-pointer-types]
+     print_declaration_list(block);
+                            ^~~~~
 symbol_table.c:153:6: note: expected ‘declaration_list * {aka struct declaration_list *}’ but argument is of type ‘symbol_table_block * {aka struct symbol_table_block *}’
  void print_declaration_list(declaration_list * list){
       ^~~~~~~~~~~~~~~~~~~~~~

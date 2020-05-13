@@ -84,16 +84,6 @@ struct node_t
 
 };
 
-struct decl{
-  type_spe type;
-  char* name;
-};
-
-struct declarations{
-  struct decl *current;
-  struct declarations *next;
-};
-
 typedef struct pexpr_t pexpr_t;
 typedef struct opr_t opr_t;
 typedef struct uopr_t uopr_t;
@@ -102,9 +92,11 @@ typedef struct if_t if_t;
 typedef struct for_t for_t;
 typedef struct func_t func;
 typedef struct struct_t struct_t;
-typedef struct declarations declarations;
-typedef struct decl decl;
 
+typedef struct decl decl;
+typedef struct declaration_list declaration_list;
+typedef struct symbol_table_block symbol_table_block;
+typedef struct symbol_table symbol_table;
 
 typedef struct node_t node_t;
 
@@ -119,13 +111,10 @@ node_t *build_struct(node_t *, node_t *);
 node_t *build_if(node_t *, node_t *, node_t *);
 node_t *build_for(node_t *, node_t *, node_t *, node_t *);
 
-int is_already_declared(char*, declarations *);
-type_spe get_variable_type(char* , declarations *);
-void add_declaration(node_t *, node_t *, declarations *);
-type_spe get_type_node(node_t *, declarations *);
-void check_all_types(node_t *);
-void check_type(node_t *, declarations *);
+//void check_all_types(node_t *);
+//void check_type(node_t *, declarations *);
 
+void print_tab(int);
 void stringify(node_t *, int);
 
 #endif
