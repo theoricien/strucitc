@@ -34,15 +34,16 @@
  * void (*)()	->	void p
  */
 
-
-
+void stack_declaration (struct stack_t *);
 void declaration (struct stack_t *, FILE *, unsigned int *);
+void print_file (FILE *);
 
 int
 main (int 			argc,
 	  const char	* argv)
 {
-	struct stack_t *stk;
+	struct stack_t *stk_decl;
+	struct stack_t *stk_opr;
 	FILE *ofile;
 	unsigned int vx;
 	unsigned int ax;
@@ -52,54 +53,66 @@ main (int 			argc,
 	vx = 0;
 	ax = 0;
 	ofile = fopen("icg_decl.out", "w+");
-    stk = init_stack();
-    stk->push(stk, "integer");
-    stk->push(stk, "int");
-    stk->push(stk, "declaration");
-
-    stk->push(stk, "integer_ptr");
-    stk->push(stk, "int *");
-    stk->push(stk, "declaration");
-
-    stk->push(stk, "integer_function_pointer");
-    stk->push(stk, "int p");
-    stk->push(stk, "declaration");
-
-    stk->push(stk, "void_pointer");
-    stk->push(stk, "void *");
-    stk->push(stk, "declaration");
-
-    stk->push(stk, "void_function_pointer");
-    stk->push(stk, "void p");
-    stk->push(stk, "declaration");
+	stk_opr = init_stack();
+    stk_decl = init_stack();
+    stack_declaration(stk_decl);
 
     for (int i = 0; i < 5; i++)
     {
-    	declaration(stk, ofile, &vx);
-    	fprintf(ofile, "/* -------------- */\n");
+    	declaration(stk_decl, ofile, &vx);
+    	fprintf(ofile, "/* -- %s -- */\n", stk_decl->get(stk_decl, i));
     }
 	
     fclose(ofile);
-
-    rdfile = fopen("icg_decl.out", "rb");
-    while (fgets(line, sizeof(line), rdfile))
-    {
-    	fprintf(stdout, "%s", line);
-    }
-    fclose(rdfile);
+    print_file(rdfile);
 
 	return EXIT_SUCCESS;
 }
 
 void
-declaration (struct stack_t * stk,
+stack_declaration (struct stack_t *stk_decl)
+{
+    stk_decl->push(stk_decl, "integer");
+    stk_decl->push(stk_decl, "int");
+    stk_decl->push(stk_decl, "declaration");
+
+    stk_decl->push(stk_decl, "integer_ptr");
+    stk_decl->push(stk_decl, "int *");
+    stk_decl->push(stk_decl, "declaration");
+
+    stk_decl->push(stk_decl, "integer_function_pointer");
+    stk_decl->push(stk_decl, "int p");
+    stk_decl->push(stk_decl, "declaration");
+
+    stk_decl->push(stk_decl, "void_pointer");
+    stk_decl->push(stk_decl, "void *");
+    stk_decl->push(stk_decl, "declaration");
+
+    stk_decl->push(stk_decl, "void_function_pointer");
+    stk_decl->push(stk_decl, "void p");
+    stk_decl->push(stk_decl, "declaration");
+}
+
+void
+print_file (FILE *f)
+{
+	f = fopen("icg_decl.out", "rb");
+    while (fgets(line, sizeof(line), f))
+    {
+    	fprintf(stdout, "%s", line);
+    }
+    fclose(f);
+}
+
+void
+declaration (struct stack_t * stk_decl,
 			 FILE 			* of,
 			 unsigned int 	* v)
 {
 	char *type;
 	
-	stk->pop(stk);
-	type = stk->pop(stk)->value;
+	stk_decl->pop(stk_decl);
+	type = stk_decl->pop(stk_decl)->value;
 
 	if (!strcmp(type, "int"))
 	{
@@ -128,5 +141,14 @@ declaration (struct stack_t * stk,
 		fprintf(of, "%s v%d;\n", "void *", *v);
 	}
 	*v += 1;
-	stk->pop(stk);
+	stk_decl->pop(stk_decl);
+}
+
+void
+operation (struct stack_t 	* stk_decl,
+		   struct stack_t 	* stk_opr,
+		   FILE 			* of,
+		   unsigned int 	* v)
+{
+	
 }

@@ -63,7 +63,7 @@ struct stack_t
 	void			(*print_stack) (struct stack_t *);
 };
 
-void assert (int, char *);
+void assert (int, const char *, ...);
 struct mcell_t *init_mcell (int, char *);
 struct dllist_t *init_dllist (void);
 struct stack_t *init_stack (void);

@@ -2,16 +2,36 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
+
+#define DEBUG 1
 
 void
 assert (int 	expr,
-	    char 	* msg)
+	    const char *fmt,
+	    ...)
 {
 	if (!expr)
 	{
-		fprintf(stderr, "[AssertionError]: %s\n", msg);
+		fprintf(stderr, "[AssertionError]: ");
+		va_list arg;
+        va_start(arg, fmt);
+        vfprintf(stdout, fmt, arg);
+        va_end(arg);
 		exit(2);
 	}
+}
+
+void
+debug (const char *fmt, ...)
+{
+    if (DEBUG)
+    {
+        va_list arg;
+        va_start(arg, fmt);
+        vfprintf(stdout, fmt, arg);
+        va_end(arg);
+    }
 }
 
 /* Init struct definitions */
@@ -76,13 +96,9 @@ pop (struct stack_t *stk)
 	struct mcell_t *popped;
 
 	assert(stk != NULL, "NULL stack_t passed as argument");
-
-	if (stk->is_empty(stk))
-	{
-		fprintf(stderr, "Pop error, empty stack");
-		stk->print_stack(stk);
-		exit(2);
-	}
+	//stk->print_stack(stk);
+	debug("!stk->is_empty(stk) = %d\n", !stk->is_empty(stk));
+	assert(!stk->is_empty(stk), "Pop error, empty stack");
 
 	popped = stk->top->curr;
 	if (stk->size == 1)
@@ -133,7 +149,7 @@ get (struct stack_t * stk,
 	int 			i;
 
 	assert(stk != NULL, "NULL stack_t passed as argument");
-	assert(stk->size >= index, "Index out of range");
+	assert(stk->size >= index, "Index out of range: %d out of %d", index, stk->size);
 
 	tmp = stk->bottom;
 	i = 0;
@@ -147,7 +163,7 @@ get (struct stack_t * stk,
 bool_t
 is_empty (struct stack_t *stk)
 {
-	return !stk->size;
+	return stk->size == 0;
 }
 
 /* Struct debug information definition */

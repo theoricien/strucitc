@@ -394,16 +394,21 @@ pointer_direct_declarator
 direct_declarator
     : IDENTIFIER
     {log2("direct_declarator -> IDENTIFIER");
-		log2($1);
-		$$ = build_leaf(TID,$1);}
+        log2($1);
+        $$ = build_leaf(TID,$1);}
     | '(' declarator ')'
-		{$$ = $2;}
-    | direct_declarator '(' parameter_list ')'
-		{$$ = build_func($1,$3);}
+        {$$ = $2;}
+    | function_declarator
+        {$$ = $1;}
+    ;
+
+function_declarator
+    : direct_declarator '(' parameter_list ')'
+        {$$ = build_func($1,$3);}
     | direct_declarator '(' identifier_list ')'
-		{$$ = build_func($1,$3);}
+        {$$ = build_func($1,$3);}
     | direct_declarator '(' ')'
-		{$$ = build_func($1,NULL);}
+        {$$ = build_func($1,NULL);}
     ;
 
 direct_declarator_pointer
@@ -412,23 +417,30 @@ direct_declarator_pointer
 
     // int (b)
     | '(' declarator ')'
-		{$$ = $2;}
+        {$$ = $2;}
 
     // Function pointer
     // int ( *b ) ( arguments )
     | '(' pointer_direct_declarator ')' '(' parameter_list ')'
-		{$$ = build_func($2,$5);}
+        {$$ = build_func($2,$5);}
     | '(' pointer_direct_declarator ')' '(' ')'
-		{$$ = build_func($2,NULL);}
+        {$$ = build_func($2,NULL);}
 
     // fonction: int foo ( arguments );
-    | direct_declarator_pointer '(' parameter_list ')'
-		{$$ = build_func($1,$3);}
-    | direct_declarator_pointer '(' identifier_list ')'
-		{$$ = build_func($1,$3);}
-    | direct_declarator_pointer '(' ')'
-		{$$ = build_func($1,NULL);}
+    | function_declarator_pointer
+        {$$ = $1;}
     ;
+
+function_declarator_pointer
+    // fonction: int foo ( arguments );
+    : direct_declarator_pointer '(' parameter_list ')'
+        {$$ = build_func($1,$3);}
+    | direct_declarator_pointer '(' identifier_list ')'
+        {$$ = build_func($1,$3);}
+    | direct_declarator_pointer '(' ')'
+        {$$ = build_func($1,NULL);}
+    ;
+
 
 direct_declarator_function_pointer
     : pointer IDENTIFIER
@@ -645,7 +657,7 @@ external_declaration
 
 function_definition
 
-    : declaration_specifiers declarator compound_statement
+    : declaration_specifiers function_declarator compound_statement
 		{$$ = build_opr("function_definition",build_opr("function",$1,$2),$3);}
     ;
 
