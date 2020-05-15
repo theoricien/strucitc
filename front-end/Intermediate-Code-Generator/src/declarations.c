@@ -3,8 +3,9 @@
 void
 declaration (struct stack_t     * stk_decl,
              struct crpdct_t    * ct,
-			 FILE 			    * of,
-			 unsigned int       * v)
+			 struct buf_t 	    * of,
+			 unsigned int       * v,
+			 unsigned int       indent)
 {
 	char *type;
 	char vvar[256];
@@ -18,46 +19,48 @@ declaration (struct stack_t     * stk_decl,
 
         sprintf(vvar, "v%d", vx);
 
+        add_tab(of, indent);
+
         if (!strcmp(type, "int"))
         {
             sprintf(vvar, "v%d", vx);
-            fprintf(of, "%s %s;\n", type, vvar);
+            of->add(of, "%s %s;\n", type, vvar);
             ct->add(ct, stk_decl->get(stk_decl, i - 1)->value, vvar);
         }
         else if (!strcmp(type, "void *"))
         {
             sprintf(vvar, "v%d", vx);
-            fprintf(of, "%s %s;\n", type, vvar);
+            of->add(of, "%s %s;\n", type, vvar);
             ct->add(ct, stk_decl->get(stk_decl, i - 1)->value, vvar);
         }
         else if (!strcmp(type, "void p"))
         {
             sprintf(vvar, "v%d", vx);
-            fprintf(of, "%s %s;\n", "void *", vvar);
+            of->add(of, "%s %s;\n", "void *", vvar);
             ct->add(ct, stk_decl->get(stk_decl, i - 1)->value, vvar);
         }
         else if (!strcmp(type, "int *"))
         {
             sprintf(vvar, "v%d", vx);
-            fprintf(of, "%s %s;\n", "int", vvar);
+            of->add(of, "%s %s;\n", "int", vvar);
             ct->add(ct, stk_decl->get(stk_decl, i - 1)->value, vvar);
             vx++;
             sprintf(vvar, "v%d", vx);
-            fprintf(of, "%s %s = &v%d;\n", "void *", vvar, vx - 1);
+            of->add(of, "%s %s = &v%d;\n", "void *", vvar, vx - 1);
             ct->add(ct, stk_decl->get(stk_decl, i - 1)->value, vvar);
         }
         else if (!strcmp(type, "int p"))
         {
             sprintf(vvar, "v%d", vx);
-            fprintf(of, "%s v%d;\n", "int", vx);
+            of->add(of, "%s v%d;\n", "int", vx);
             ct->add(ct, stk_decl->get(stk_decl, i - 1)->value, vvar);
             vx++;
             sprintf(vvar, "v%d", vx);
-            fprintf(of, "%s v%d = &v%d;\n", "void *", vx, vx - 1);
+            of->add(of, "%s v%d = &v%d;\n", "void *", vx, vx - 1);
             ct->add(ct, stk_decl->get(stk_decl, i - 1)->value, vvar);
             vx++;
             sprintf(vvar, "v%d", vx);
-            fprintf(of, "%s v%d;\n", "void *", vx);
+            of->add(of, "%s v%d;\n", "void *", vx);
             ct->add(ct, stk_decl->get(stk_decl, i - 1)->value, vvar);
         }
         vx++;

@@ -10,6 +10,21 @@ typedef enum {false, true} bool_t;
 typedef unsigned int size_t;
 typedef char * v_t;
 
+
+typedef enum {EXPRESSION,
+              CONDITION,
+              IFEXPR}
+        arithmetic_t;
+
+struct buf_t
+{
+    size_t  size;
+    char    * string;
+
+    /* Realloc itself if needed */
+    void    (*add)(struct buf_t *, const char *, ...);
+};
+
 /*
  * mcell_t
  * Type that represents a memory cell
@@ -59,6 +74,7 @@ struct stack_t
 	struct mcell_t 	*(*pop) (struct stack_t *);
 	struct mcell_t 	*(*push) (struct stack_t *, v_t);
 	struct mcell_t  *(*get) (struct stack_t *, int);
+	struct stack_t  *(*clone) (struct stack_t *, size_t, size_t);
 	bool_t 			(*is_empty) (struct stack_t *);
 	void			(*print_stack) (struct stack_t *);
 };
@@ -70,6 +86,7 @@ struct stack_t *init_stack (void);
 struct mcell_t *pop (struct stack_t *);
 struct mcell_t *push (struct stack_t *, v_t);
 struct mcell_t *get (struct stack_t *, int);
+struct stack_t *_stack_clone (struct stack_t *, size_t, size_t);
 bool_t is_empty (struct stack_t *);
 void print_cell (struct mcell_t *);
 void print_stack (struct stack_t *);

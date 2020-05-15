@@ -82,6 +82,7 @@ init_stack (void)
 	stk->pop = pop;
 	stk->push = push;
 	stk->get = get;
+	stk->clone = _stack_clone;
 	stk->is_empty = is_empty;
 	stk->print_stack = print_stack;
 
@@ -158,6 +159,22 @@ get (struct stack_t * stk,
 
 
 	return tmp->curr;
+}
+
+struct stack_t *
+_stack_clone (struct stack_t    * stk,
+              size_t            from,
+              size_t            to)
+{
+    struct stack_t *res;
+
+    res = init_stack();
+    for (size_t i = from; i < to; i++)
+    {
+        res->push(res, stk->get(stk, i)->value);
+    }
+
+    return res;
 }
 
 bool_t

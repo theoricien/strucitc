@@ -12,6 +12,7 @@ init_crpcdt (void)
     tmp->be = NULL;
     tmp->next = NULL;
     tmp->add = _crpdct_add;
+    tmp->clone = _crpdct_clone;
 
     return tmp;
 }
@@ -43,25 +44,51 @@ _crpdct_add (struct crpdct_t    * ct,
 	}
 }
 
+struct crpdct_t *
+_crpdct_clone (struct crpdct_t *ct)
+{
+    struct crpdct_t *res;
+    struct crpdct_t *tmp;
+
+    res = init_crpcdt();
+    tmp = ct;
+
+    while (tmp != NULL)
+    {
+        res->add(res, tmp->fe, tmp->be);
+        tmp = tmp->next;
+    }
+
+    return res;
+}
+
+/*
+ * find_*_of functions return the last
+ * occurence else the variable inside
+ * a statement refers to the older declaration
+ */
+
 char *
 find_be_of (struct crpdct_t * ct,
             char            * fe)
 {
     struct crpdct_t *tmp;
+    char *last_occurence;
 
+    last_occurence = NULL;
     tmp = ct;
 
     if (!strcmp(tmp->fe, fe))
-        return tmp->be;
+        last_occurence = tmp->be;
 
     while (tmp->next != NULL)
     {
         tmp = tmp->next;
         if (!strcmp(tmp->fe, fe))
-            return tmp->be;
+            last_occurence = tmp->be;
     }
 
-    return (char *) NULL;
+    return last_occurence;
 }
 
 char *
@@ -69,20 +96,22 @@ find_fe_of (struct crpdct_t * ct,
             char            * be)
 {
     struct crpdct_t *tmp;
+    char *last_occurence;
 
+    last_occurence = NULL;
     tmp = ct;
 
     if (!strcmp(tmp->be, be))
-        return tmp->fe;
+        last_occurence = tmp->fe;
 
     while (tmp->next != NULL)
     {
         tmp = tmp->next;
         if (!strcmp(tmp->be, be))
-            return tmp->fe;
+            last_occurence = tmp->fe;
     }
 
-    return (char *) NULL;
+    return last_occurence;
 }
 
 void

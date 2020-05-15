@@ -14,14 +14,17 @@ void
 statements (struct stack_t  * stk_decl,
             struct stack_t  * stk_stmt,
             struct crpdct_t * ct,
-            FILE 		    * fdecl,
-            FILE 		    * fstmt,
-            unsigned int    * v)
+            struct buf_t    * fdecl,
+            struct buf_t    * fstmt,
+            unsigned int    * v,
+            unsigned int    from,
+            unsigned int    to,
+            unsigned int    indent)
 {
     char *type;
     unsigned int idx;
 
-    for (size_t i = 0; i < stk_stmt->size; i++)
+    for (size_t i = from; i < to; i++)
     {
         type = stk_stmt->get(stk_stmt, i)->value;
         /* expr -> .... -> ;*/
@@ -29,12 +32,53 @@ statements (struct stack_t  * stk_decl,
         if (!strcmp(type, "expr"))
         {
             idx = search_next_semicolon(stk_stmt, i);
-            arithmetic_gen(stk_decl, stk_stmt, ct, i, idx, fdecl, fstmt, v);
+            arithmetic_gen(stk_decl, stk_stmt, ct, i, idx, fdecl, fstmt, v, EXPRESSION, indent);
         }
-        /*
+        /* if -> ... -> then -> ... -> endif */
         else if (!strcmp(type, "if"))
         {
+            unsigned int end_cond;
+            struct buf_t *decl_buf;
+            struct buf_t *stmt_buf;
+
+            decl_buf = init_buf();
+            stmt_buf = init_buf();
+
+            /* if (cond) { ... } */
+            idx = search_end_if(stk_stmt, i + 1);
+            assert(idx != (unsigned int) -1, "idx = search_end_if(stk_stmt, i + 1) returns -1");
+            //printf("endif found at %x\n", idx);
+
+            /* end_cond = "then" */
+            end_cond = search_end_cond(stk_stmt, i);
+            assert(end_cond != (unsigned int) -1, "end_cond = search_end_cond(stk_stmt, i) returns -1");
+            //printf("then found at %x\n", end_cond);
+
+            /* CONDITION */
+            /* if (condition)*/
+            arithmetic_gen(stk_decl, stk_stmt, ct, i, end_cond, fdecl, fstmt, v, IFEXPR, indent);
+
+            /* STATEMENT : DECLARATION + STATEMENT */
+            /* { code inside if } */
+            if_gen(stk_decl, stk_stmt, ct, end_cond, idx, v, decl_buf, stmt_buf, indent);
+
+            //printf(decl_buf->string);
+            //printf(stmt_buf->string);
+
+            fstmt->add(fstmt, "%s\n", decl_buf->string);
+            fstmt->add(fstmt, "%s\n", stmt_buf->string);
         }
+        else
+        {
+            fprintf(stderr, "[TypeError] Type not found: %s\n", type);
+        }
+        /* if -> ... -> then -> ... -> else -> ... -> endif
+        else if (!strcmp(type, "ifelse"))
+        {
+            /* if (cond) goto Lx { ... } Lx: { ... } */
+        i = idx;
+    }
+        /*
         else if (!strcmp(type, "while"))
         {
         }
@@ -42,8 +86,34 @@ statements (struct stack_t  * stk_decl,
         {
 
         }*/
-        i = idx;
+
+}
+
+unsigned int
+search_end_if (struct stack_t   * stk,
+               unsigned int     current_index)
+{
+    //stk->print_stack(stk);
+    //printf("for (size_t i = %d; i < %d; i++)\n", current_index, stk->size);
+    for (size_t i = current_index; i < stk->size; i++)
+    {
+        //printf("i = %x with %s\n", i, stk->get(stk, i)->value);
+        if (!strcmp(stk->get(stk, i)->value, "if") ||
+            !strcmp(stk->get(stk, i)->value, "ifelse"))
+        {
+            //printf("if/ifelse found\n");
+            i = search_end_if(stk, i + 1);
+            continue;
+        }
+
+        if (!strcmp(stk->get(stk, i)->value, "endif"))
+        {
+            //printf("End at: %d\n", i);
+            return i;
+        }
     }
+    //printf("Returns -1 !!\n");
+    return (unsigned int)-1;
 }
 
 unsigned int
@@ -66,11 +136,13 @@ arithmetic_gen (struct stack_t  * stk_decl,
                 struct crpdct_t * ct,
                 unsigned int    from,
                 unsigned int    to,
-                FILE            * fdecl,
-                FILE            * fstmt,
-                unsigned int    * vx)
+                struct buf_t    * fdecl,
+                struct buf_t    * fstmt,
+                unsigned int    * vx,
+                arithmetic_t    output_type,
+                unsigned int    indent)
 {
-    register const char *expr_type;
+    register char *expr_type;
     register char *variable_name;
 
     expr_type = stk_stmt->get(stk_stmt, from + 1)->value;
@@ -83,7 +155,13 @@ arithmetic_gen (struct stack_t  * stk_decl,
         if (!strcmp(assignement_type, "+") ||
             !strcmp(assignement_type, "-") ||
             !strcmp(assignement_type, "*") ||
-            !strcmp(assignement_type, "/"))
+            !strcmp(assignement_type, "/") ||
+            !strcmp(assignement_type, "==") ||
+            !strcmp(assignement_type, "!=") ||
+            !strcmp(assignement_type, "<=") ||
+            !strcmp(assignement_type, ">=") ||
+            !strcmp(assignement_type, "<") ||
+            !strcmp(assignement_type, ">"))
         {
             unsigned int end_left_operand = 0;
             unsigned int end_right_operand = 0;
@@ -112,9 +190,10 @@ arithmetic_gen (struct stack_t  * stk_decl,
                 stk_decl->push(stk_decl, "int");
                 stk_decl->push(stk_decl, "declaration");
 
-                fprintf(fdecl, "int %s;\n", left_cell_operand->value);
+                add_tab(fdecl, indent);
+                fdecl->add(fdecl, "int %s;\n", left_cell_operand->value);
                 /* left_operand = v0l */
-                left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 4, &end_left_operand, fdecl, fstmt, left_cell_operand->value);
+                left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 4, &end_left_operand, fdecl, fstmt, left_cell_operand->value, indent);
             }
 
             if (isdigit(stk_stmt->get(stk_stmt, end_left_operand)->value))
@@ -136,19 +215,55 @@ arithmetic_gen (struct stack_t  * stk_decl,
                 stk_decl->push(stk_decl, right_cell_operand->value);
                 stk_decl->push(stk_decl, "int");
                 stk_decl->push(stk_decl, "declaration");
-                fprintf(fdecl, "int %s;\n", right_cell_operand->value);
+
+                add_tab(fdecl, indent);
+                fdecl->add(fdecl, "int %s;\n", right_cell_operand->value);
 
                 /* right_operand = v0r */
-                right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fdecl, fstmt, right_cell_operand->value);
+                right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fdecl, fstmt, right_cell_operand->value, indent);
             }
 
             to = end_right_operand + 1;
 
-            fprintf(fstmt, "%s = %s %s %s;\n", variable_name, left_operand, assignement_type, right_operand);
+            switch (output_type)
+            {
+                case EXPRESSION:
+                    add_tab(fstmt, indent);
+                    fstmt->add(fstmt, "%s = %s %s %s;\n", variable_name, left_operand, assignement_type, right_operand);
+                    break;
+                case CONDITION:
+                    fstmt->add(fstmt, "%s = %s %s %s", variable_name, left_operand, assignement_type, right_operand);
+                    break;
+                case IFEXPR:
+                    add_tab(fstmt, indent);
+                    fstmt->add(fstmt, "if (%s = %s %s %s)", variable_name, left_operand, assignement_type, right_operand);
+                    break;
+                default:
+                    fstmt->add(fstmt, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
+                    break;
+            }
+
         }
-        else if (isdigit(assignement_type))
+        else if (isdigit(assignement_type) ||
+                 isidentifier(assignement_type))
         {
-            fprintf(fstmt, "%s = %s;\n", variable_name, assignement_type);
+            switch (output_type)
+            {
+                case EXPRESSION:
+                    add_tab(fstmt, indent);
+                    fstmt->add(fstmt, "%s = %s;\n", variable_name, assignement_type);
+                    break;
+                case CONDITION:
+                    fstmt->add(fstmt, "%s = %s", variable_name, assignement_type);
+                    break;
+                case IFEXPR:
+                    add_tab(fstmt, indent);
+                    fstmt->add(fstmt, "if (%s = %s)", variable_name, assignement_type);
+                    break;
+                default:
+                    fprintf(stderr, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
+                    break;
+            }
         }
     }
     else if (!strcmp(expr_type, "==") ||
@@ -158,7 +273,6 @@ arithmetic_gen (struct stack_t  * stk_decl,
              !strcmp(expr_type, "<") ||
              !strcmp(expr_type, ">"))
     {
-        register const char *assignement_type;
         register char *variable_name;
 
         unsigned int end_left_operand = 0;
@@ -195,9 +309,10 @@ arithmetic_gen (struct stack_t  * stk_decl,
             stk_decl->push(stk_decl, "int");
             stk_decl->push(stk_decl, "declaration");
 
-            fprintf(fdecl, "int %s;\n", left_cell_operand->value);
+            add_tab(fdecl, indent);
+            fdecl->add(fdecl, "int %s;\n", left_cell_operand->value);
             /* left_operand = v0l */
-            left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 2, &end_left_operand, fdecl, fstmt, left_cell_operand->value);
+            left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 2, &end_left_operand, fdecl, fstmt, left_cell_operand->value, indent);
         }
 
         if (isdigit(stk_stmt->get(stk_stmt, end_left_operand)->value))
@@ -219,15 +334,54 @@ arithmetic_gen (struct stack_t  * stk_decl,
             stk_decl->push(stk_decl, right_cell_operand->value);
             stk_decl->push(stk_decl, "int");
             stk_decl->push(stk_decl, "declaration");
-            fprintf(fdecl, "int %s;\n", right_cell_operand->value);
+
+            add_tab(fdecl, indent);
+            fdecl->add(fdecl, "int %s;\n", right_cell_operand->value);
 
             /* right_operand = v0r */
-            right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fdecl, fstmt, right_cell_operand->value);
+            right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fdecl, fstmt, right_cell_operand->value, indent);
         }
 
         to = end_right_operand + 1;
 
-        fprintf(fstmt, "%s %s %s", left_operand, expr_type, right_operand);
+        switch (output_type)
+        {
+            case EXPRESSION:
+                add_tab(fstmt, indent);
+                fstmt->add(fstmt, "%s %s %s;\n", left_operand, expr_type, right_operand);
+                break;
+            case CONDITION:
+                fstmt->add(fstmt, "%s %s %s", left_operand, expr_type, right_operand);
+                break;
+            case IFEXPR:
+                add_tab(fstmt, indent);
+                fstmt->add(fstmt, "if (%s %s %s)\n", left_operand, expr_type, right_operand);
+                break;
+            default:
+                fprintf(stderr, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
+                break;
+        }
+    }
+    else if (isdigit(expr_type) ||
+             isidentifier(expr_type))
+    {
+        switch (output_type)
+        {
+            case EXPRESSION:
+                fprintf(stderr, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
+                break;
+            case CONDITION:
+                fstmt->add(fstmt, "%s", expr_type);
+                break;
+            case IFEXPR:
+                add_tab(fstmt, indent);
+                //printf("indent for if (%s) = %d\n", expr_type, indent);
+                fstmt->add(fstmt, "if (%s)\n", expr_type);
+                break;
+            default:
+                fprintf(stderr, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
+                break;
+        }
     }
 }
 
@@ -237,9 +391,10 @@ to_one_addr (struct stack_t  * stk_decl,
              struct crpdct_t * ct,
              unsigned int    from,
              unsigned int    * to,
-             FILE            * fd,
-             FILE            * fs,
-             char            * vname)
+             struct buf_t    * fd,
+             struct buf_t    * fs,
+             char            * vname,
+             unsigned int    indent)
 {
     /* Inside an expression */
 
@@ -249,7 +404,13 @@ to_one_addr (struct stack_t  * stk_decl,
     if (!strcmp(operand, "+") ||
         !strcmp(operand, "-") ||
         !strcmp(operand, "*") ||
-        !strcmp(operand, "/"))
+        !strcmp(operand, "/") ||
+        !strcmp(operand, "==") ||
+        !strcmp(operand, "!=") ||
+        !strcmp(operand, "<=") ||
+        !strcmp(operand, ">=") ||
+        !strcmp(operand, "<") ||
+        !strcmp(operand, ">"))
     {
         unsigned int end_left_operand = 0;
         unsigned int end_right_operand = 0;
@@ -281,8 +442,9 @@ to_one_addr (struct stack_t  * stk_decl,
             stk_decl->push(stk_decl, "int");
             stk_decl->push(stk_decl, "declaration");
 
-            fprintf(fd, "int %s;\n", left_cell_operand->value);
-            left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 1, &end_left_operand, fd, fs, left_cell_operand->value);
+            add_tab(fd, indent);
+            fd->add(fd, "int %s;\n", left_cell_operand->value);
+            left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 1, &end_left_operand, fd, fs, left_cell_operand->value, indent);
         }
 
         if (isdigit(stk_stmt->get(stk_stmt, end_left_operand)->value))
@@ -306,11 +468,13 @@ to_one_addr (struct stack_t  * stk_decl,
             stk_decl->push(stk_decl, "int");
             stk_decl->push(stk_decl, "declaration");
 
-            fprintf(fd, "int %s;\n", right_cell_operand->value);
-            right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fd, fs, right_cell_operand->value);
+            add_tab(fd, indent);
+            fd->add(fd, "int %s;\n", right_cell_operand->value);
+            right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fd, fs, right_cell_operand->value, indent);
         }
 
-        fprintf(fs, "%s = %s %s %s;\n", uexpr, left_operand, operand, right_operand);
+        add_tab(fs, indent);
+        fs->add(fs, "%s = %s %s %s;\n", uexpr, left_operand, operand, right_operand);
         *to = end_right_operand;
 
         return uexpr;
@@ -355,4 +519,12 @@ isdigit (char *s)
             return false;
     }
     return true;
+}
+
+void
+add_tab (struct buf_t   * b,
+         unsigned int   indent)
+{
+    for (size_t i = 0; i < indent; i++)
+        b->add(b, "    ");
 }

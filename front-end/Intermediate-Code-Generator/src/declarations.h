@@ -5,7 +5,8 @@
 #include <string.h>
 #include "stack.h"
 #include "crpdct.h"
+#include "ifstmt.h"
 
-void declaration (struct stack_t *, struct crpdct_t *, FILE *, unsigned int *);
+void declaration (struct stack_t *, struct crpdct_t *, struct buf_t *, unsigned int *, unsigned int);
 
 #endif // DECLARATIONS_H
