@@ -1,6 +1,9 @@
-int foo(){
-  int b = 0;
-  int a = 2;
+int a;
+int g;
+int gg;
+
+int foo(int x, int y){
+  /*int b = 0;*/
   b = 5;
   return 4;
 }

@@ -135,6 +135,7 @@ void add_declaration(declaration_list *declaration_list, decl *new_declaration){
       tmp = tmp->next;
     }
     tmp->next = new_declaration_list;
+
   }
 }
 
@@ -146,22 +147,25 @@ void print_decl(decl* decl){
   else{
     strcpy(type,"void");
   }
-  print_tab(8);
+  print_tab(12);
   printf("[*] \t\t %s %s \t\t\n",type,decl->name);
 }
 
 void print_declaration_list(declaration_list * list){
-  //printf("[***] \t\t Bloc %s \t\t [***]\n",list->context);
   if(list->current != NULL){
-    print_decl(list->current);
+    if(list->current->name != NULL){
+      print_decl(list->current);
+    }
   }
-  struct declaration_list* tmp = list->next;
-  if(tmp->current != NULL){
-    print_decl(tmp->current);
-  }
-  while(tmp->next != NULL){
-    tmp = tmp->next;
-    print_decl(tmp->current);
+  if(list->next != NULL){
+    struct declaration_list* tmp = list->next;
+    if(tmp->current != NULL){
+      print_decl(tmp->current);
+    }
+    while(tmp->next != NULL){
+      tmp = tmp->next;
+      print_decl(tmp->current);
+    }
   }
 }
 
@@ -230,10 +234,9 @@ type_spe get_variable_type(char *identifier, symbol_table_block *block){
 }
 
 void add_block_declaration(symbol_table_block * block, decl *new_declaration){
-
   if(block->declarations == NULL){
     block->declarations = (struct declaration_list*)malloc(sizeof(struct declaration_list));
-    block->declarations->current = new_declaration;
+    block->declarations->current = clone_decl(new_declaration);
   }
   else{
     add_declaration(block->declarations,new_declaration);
@@ -274,6 +277,20 @@ void print_block(symbol_table_block *block){
   print_declaration_list(block);
 }
 
+void add_all_declarations_to_block(symbol_table_block *block, symbol_table_block *new_block){
+  if((block != NULL) && (new_block != NULL)){
+    declaration_list *new_tmp = new_block->declarations;
+    if(block->declarations == NULL){
+      block->declarations = (struct declaration_list*)malloc(sizeof(struct declaration_list));
+    }
+    while (new_tmp->next != NULL) {
+      add_declaration(block->declarations,new_tmp->current);
+      new_tmp = new_tmp->next;
+    }
+    add_declaration(block->declarations,new_tmp->current);
+  }
+}
+
 
 
 /*        =====================================================
@@ -292,10 +309,39 @@ symbol_table *init_symbol_table(){
 
 }
 
+/*
+* Return 1 if exists, 0 otherwise
+*/
+symbol_table_block *block_exists(symbol_table *table, char *block_name){
+  if(table->definition_block != NULL){
+    if(table->definition_block->context != NULL){
+      if(!strcmp(table->definition_block->context,block_name)){
+        return table->definition_block;
+      }
+    }
+    if(table->next_symbol_table != NULL){
+      symbol_table *tmp = table->next_symbol_table;
+
+      while(tmp != NULL){
+        if(tmp->definition_block != NULL){
+          if(tmp->definition_block->context != NULL){
+            if(!strcmp(tmp->definition_block->context,block_name)){
+              return tmp->definition_block;
+            }
+          }
+        }
+        tmp = tmp->next_symbol_table;
+      }
+    }
+    return NULL;
+  }
+  else{
+    return NULL;
+  }
+}
 
 void print_symbol_table(symbol_table *table, int indent){
   printf("[*******] \t\t Printing symbol table \t\t [*******]\n");
-
   if(table->definition_block != NULL){
       print_block(table->definition_block);
   }
@@ -364,6 +410,8 @@ symbol_table *build_symbol_table(node_t *tree){
 
   symbol_table *table = init_symbol_table();
   symbol_table *global_table = init_symbol_table();
+  global_table->definition_block->context = (char *)malloc(strlen("global") +1);
+  strcpy(global_table->definition_block->context,"global");
 
   symbol_table *print_table = init_symbol_table();
   symbol_table *print_first_index = print_table;
@@ -380,15 +428,18 @@ symbol_table *build_symbol_table(node_t *tree){
 */
 
 void construct_table(node_t *tree, symbol_table *table, symbol_table *global_table, symbol_table *print_table){
-
   if(tree->type == TID || tree->type == TCONS){
     return;
   }
+  if(tree->type == TFUNC){
+    construct_table(tree->function->arguments,table,global_table,print_table);
+  }
+
   if(tree->type == TOP){
     if(!strcmp(tree->opr->optype,"function_definition")){
       symbol_table *new_table;
       if(is_any_declaration(table->definition_block)){
-         new_table = clone_symbol_table(table);
+         new_table = init_symbol_table();
       }
       else{
         new_table = table;
@@ -400,20 +451,54 @@ void construct_table(node_t *tree, symbol_table *table, symbol_table *global_tab
           strcpy(new_block->context,tree->opr->left->opr->right->function->name->leaf->value);
         }
       }
-      if(global_table->definition_block->context != NULL){
-      }
+
       add_block_to_table(new_table,new_block);
-      add_block_to_table(global_table,new_block);
       add_block_to_table(print_table,new_block);
-      construct_table(tree->opr->right,new_table,global_table,print_table);
+      //print_symbol_table(global_table,0);
+      add_all_declarations_to_block(block_exists(new_table,new_block->context),global_table->definition_block);
+      add_all_declarations_to_block(block_exists(print_table,new_block->context),global_table->definition_block);
+      //printf("%s\n",global_table->definition_block->declarations->current->name);
+      //printf("\n\n\n");
+      construct_table(tree->opr->left,new_table,global_table,print_table);
+      construct_table(tree->opr->right,new_table,global_table,print_table); // ICI QUE VOID
 
     }
-    else if(!strcmp(tree->opr->optype,"function")){
-      ;
+
+
+
+    else if(!strcmp(tree->opr->optype, "parameter_declaration")){
+      if(tree->opr->left->type == TOP){
+        construct_table(tree->opr->left,table,global_table,print_table);
+      }
+      if(tree->opr->right->type == TOP){
+        construct_table(tree->opr->right,table,global_table,print_table);
+      }
+      if((tree->opr->left->type == TT) && (tree->opr->right->type == TID)){
+
+        decl *tmp;
+        if(!strcmp(tree->opr->left->leaf->value,"int")){
+          tmp = build_decl(TINT,tree->opr->right->leaf->value);
+        }
+        else{
+          tmp = build_decl(TVOID,tree->opr->right->leaf->value);
+        }
+
+        add_block_declaration(table->definition_block,tmp);
+        //add_block_declaration(global_table->definition_block,tmp);
+
+        symbol_table_block *tmp_block;
+        if(block_exists(print_table,table->definition_block->context) != NULL){
+          tmp_block = block_exists(print_table,table->definition_block->context);
+          add_block_declaration(tmp_block,tmp);
+        }else{
+          add_block_declaration(print_table->definition_block,tmp);
+        }
+      }
     }
+
+
+
     else if(!strcmp(tree->opr->optype,"declaration")){
-      //declaration of type: int i;
-      //printf("%d , %d \n",tree->opr->left->type, tree->opr->right->type);
       if(tree->opr->left->type == TT && tree->opr->right->type == TID){
         decl *tmp;
         if(!strcmp(tree->opr->left->leaf->value,"int")){
@@ -422,37 +507,105 @@ void construct_table(node_t *tree, symbol_table *table, symbol_table *global_tab
         else{
           tmp = build_decl(TVOID,tree->opr->right->leaf->value);
         }
+
         add_block_declaration(table->definition_block,tmp);
-        add_block_declaration(global_table->definition_block,tmp);
+
+        symbol_table_block *tmp_block;
+        if(block_exists(print_table,table->definition_block->context) != NULL){
+          tmp_block = block_exists(print_table,table->definition_block->context);
+          add_block_declaration(tmp_block,tmp);
+        }else{
+          add_block_declaration(print_table->definition_block,tmp);
+        }
+
       }
       //declaration of type: int i = 0;
       else if(tree->opr->left->type == TT && tree->opr->right->type == TOP){
         decl *tmp;
+
         if(!strcmp(tree->opr->left->leaf->value,"int")){
           tmp = build_decl(TINT,tree->opr->right->opr->left->leaf->value);
+
         }
         else{
           tmp = build_decl(TVOID,tree->opr->right->opr->left->leaf->value);
         }
+
         add_block_declaration(table->definition_block,tmp);
-        add_block_declaration(global_table->definition_block,tmp);
-        add_block_declaration(print_table->definition_block,tmp);
-        return;
+
+        symbol_table_block *tmp_block;
+        if(block_exists(print_table,table->definition_block->context) != NULL){
+          tmp_block = block_exists(print_table,table->definition_block->context);
+          add_block_declaration(tmp_block,tmp);
+        }else{
+          add_block_declaration(print_table->definition_block,tmp);
+        }
       }
       ;
-    }/*
+    }
     else if(!strcmp(tree->opr->optype,"program")){
-      symbol_table *new_table;
-      if(!is_any_declaration(table->definition_block)){
-         new_table = init_symbol_table(table);
-      }
-      else{
-        new_table = table;
-      }
-    }*/
+      case_program_in_construct_table(tree,table,global_table,print_table);
+    }
+
     else{
       construct_table(tree->opr->left,table,global_table,print_table);
       construct_table(tree->opr->right,table,global_table,print_table);
     }
+  }
+}
+
+
+
+
+
+
+
+
+void case_program_in_construct_table(node_t *tree, symbol_table *table, symbol_table *global_table, symbol_table *print_table){
+
+  if(tree->opr->left->type == TOP && tree->opr->right->type == TOP){
+
+    if(!strcmp(tree->opr->left->opr->optype,"declaration")){
+      case_global_declaration_in_construct_table(tree->opr->left,global_table);
+    }
+    else{
+      construct_table(tree->opr->left,table,global_table,print_table);
+    }
+    if(!strcmp(tree->opr->right->opr->optype,"declaration")){
+      case_global_declaration_in_construct_table(tree->opr->right,global_table);
+    }
+    else{
+      construct_table(tree->opr->right,table,global_table,print_table);
+    }
+  }
+  else{
+    printf("??\n");
+  }
+}
+
+void case_global_declaration_in_construct_table(node_t *tree, symbol_table *global_table){
+  //printf("%d\n",tree->opr->left->type);
+  if(tree->opr->left->type == TT && tree->opr->right->type == TID){
+    decl *tmp;
+    if(!strcmp(tree->opr->left->leaf->value,"int")){
+      tmp = build_decl(TINT,tree->opr->right->leaf->value);
+    }
+    else{
+      tmp = build_decl(TVOID,tree->opr->right->leaf->value);
+    }
+    add_block_declaration(global_table->definition_block,tmp);
+  }
+  //declaration of type: int i = 0;
+  else if(tree->opr->left->type == TT && tree->opr->right->type == TOP){
+    decl *tmp;
+
+    if(!strcmp(tree->opr->left->leaf->value,"int")){
+      tmp = build_decl(TINT,tree->opr->right->opr->left->leaf->value);
+
+    }
+    else{
+      tmp = build_decl(TVOID,tree->opr->right->opr->left->leaf->value);
+    }
+    add_block_declaration(global_table->definition_block,tmp);
   }
 }

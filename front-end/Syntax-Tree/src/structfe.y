@@ -60,6 +60,7 @@
 %type <node> struct_or_union_specifier specifier_qualifier_list struct_declarator_list struct_declarator
 %type <node> direct_declarator_function_pointer identifier_list abstract_declarator abstract_declarator_with_pointer
 %type <node> direct_abstract_declarator direct_abstract_declarator_pointer_free
+%type <node> function_declarator function_declarator_pointer
 
 %start _start
 %%
@@ -640,7 +641,8 @@ program
 _start
 	:program
 	{stringify($1,0);
-	build_symbol_table($1);}
+	//build_symbol_table($1);
+	semantical_check($1);}
 
 
 // Une suite de declaration de definitions de fonctions

@@ -44,15 +44,19 @@ void add_block_declaration(symbol_table_block *, decl *);
 symbol_table_block *clone_block(symbol_table_block *);
 int is_any_declaration(symbol_table_block *);
 void print_block(symbol_table_block *);
+void add_all_declarations_to_block(symbol_table_block *, symbol_table_block *);
 
 // Operations on symbol_table
 // Each diferent block have his own symbol table
 symbol_table *init_symbol_table();
 void add_block_to_table(symbol_table *, symbol_table_block *);
 symbol_table *clone_symbol_table(symbol_table *);
+symbol_table_block *block_exists(symbol_table *, char *);
 void print_symbol_table(symbol_table *, int);
 symbol_table *build_symbol_table(node_t *);
 void construct_table(node_t *, symbol_table *, symbol_table *, symbol_table *);
 
+void case_global_declaration_in_construct_table(node_t *, symbol_table *);
+void case_program_in_construct_table(node_t *, symbol_table *, symbol_table *, symbol_table *);
 
 #endif
