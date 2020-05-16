@@ -17,6 +17,7 @@ statements (struct stack_t  * stk_decl,
             struct buf_t    * fdecl,
             struct buf_t    * fstmt,
             unsigned int    * v,
+            unsigned int    * l,
             unsigned int    from,
             unsigned int    to,
             unsigned int    indent)
@@ -32,7 +33,7 @@ statements (struct stack_t  * stk_decl,
         if (!strcmp(type, "expr"))
         {
             idx = search_next_semicolon(stk_stmt, i);
-            arithmetic_gen(stk_decl, stk_stmt, ct, i, idx, fdecl, fstmt, v, EXPRESSION, indent);
+            arithmetic_gen(stk_decl, stk_stmt, ct, i, idx, fdecl, fstmt, v, l, EXPRESSION, indent);
         }
         /* if -> ... -> then -> ... -> endif */
         else if (!strcmp(type, "if"))
@@ -56,11 +57,11 @@ statements (struct stack_t  * stk_decl,
 
             /* CONDITION */
             /* if (condition)*/
-            arithmetic_gen(stk_decl, stk_stmt, ct, i, end_cond, fdecl, fstmt, v, IFEXPR, indent);
+            arithmetic_gen(stk_decl, stk_stmt, ct, i, end_cond, fdecl, fstmt, v, l, IFEXPR, indent);
 
             /* STATEMENT : DECLARATION + STATEMENT */
             /* { code inside if } */
-            if_gen(stk_decl, stk_stmt, ct, end_cond, idx, v, decl_buf, stmt_buf, indent);
+            if_gen(stk_decl, stk_stmt, ct, end_cond, idx, v, l, decl_buf, stmt_buf, indent);
 
             //printf(decl_buf->string);
             //printf(stmt_buf->string);
@@ -68,14 +69,52 @@ statements (struct stack_t  * stk_decl,
             fstmt->add(fstmt, "%s\n", decl_buf->string);
             fstmt->add(fstmt, "%s\n", stmt_buf->string);
         }
+        /* if -> ... -> then -> ... -> else -> ... -> endif */
+        else if (!strcmp(type, "ifelse"))
+        {
+            /* if (cond) goto Lx { ... } Lx: { ... } */
+            unsigned int end_cond;
+            unsigned int else_idx;
+            struct buf_t *ifdecl_buf;
+            struct buf_t *ifstmt_buf;
+            struct buf_t *elsedecl_buf;
+            struct buf_t *elsestmt_buf;
+
+            ifdecl_buf = init_buf();
+            ifstmt_buf = init_buf();
+            elsedecl_buf = init_buf();
+            elsestmt_buf = init_buf();
+
+            /* if (cond) { ... } */
+            idx = search_end_if(stk_stmt, i + 1);
+            assert(idx != (unsigned int) -1, "idx = search_end_if(stk_stmt, i + 1) returns -1");
+            /* = "then" */
+            end_cond = search_next(stk_stmt, i, "then");
+            assert(end_cond != (unsigned int) -1, "end_cond = search_end_cond(stk_stmt, i) returns -1");
+            /* = "else" */
+            else_idx = search_next(stk_stmt, i, "else");
+            assert(else_idx != (unsigned int) -1, "else_idx = search_end_cond(stk_stmt, i) returns -1");
+
+            /* CONDITION */
+            /* if (condition) goto LX;*/
+            arithmetic_gen(stk_decl, stk_stmt, ct, i, end_cond, fdecl, fstmt, v, l, IFELSE, indent);
+
+            /* STATEMENT : DECLARATION + STATEMENT */
+            /* { code inside else } LX: { code inside if }*/
+            ifelse_gen(stk_decl, stk_stmt, ct, end_cond, else_idx, idx, v, l, ifdecl_buf, ifstmt_buf, elsedecl_buf, elsestmt_buf, indent);
+
+            //printf(ifdecl_buf->string);
+            //printf(ifstmt_buf->string);
+
+            fstmt->add(fstmt, "%s\n", elsedecl_buf->string);
+            fstmt->add(fstmt, "%s\n", elsestmt_buf->string);
+            fstmt->add(fstmt, "%s\n", ifdecl_buf->string);
+            fstmt->add(fstmt, "%s\n", ifstmt_buf->string);
+        }
         else
         {
             fprintf(stderr, "[TypeError] Type not found: %s\n", type);
         }
-        /* if -> ... -> then -> ... -> else -> ... -> endif
-        else if (!strcmp(type, "ifelse"))
-        {
-            /* if (cond) goto Lx { ... } Lx: { ... } */
         i = idx;
     }
         /*
@@ -139,6 +178,7 @@ arithmetic_gen (struct stack_t  * stk_decl,
                 struct buf_t    * fdecl,
                 struct buf_t    * fstmt,
                 unsigned int    * vx,
+                unsigned int    * lx,
                 arithmetic_t    output_type,
                 unsigned int    indent)
 {
@@ -236,7 +276,11 @@ arithmetic_gen (struct stack_t  * stk_decl,
                     break;
                 case IFEXPR:
                     add_tab(fstmt, indent);
-                    fstmt->add(fstmt, "if (%s = %s %s %s)", variable_name, left_operand, assignement_type, right_operand);
+                    fstmt->add(fstmt, "if (%s = %s %s %s) goto L%d; L%d:\n", variable_name, left_operand, assignement_type, right_operand, *lx, *lx);
+                    break;
+                case IFELSE:
+                    add_tab(fstmt, indent);
+                    fstmt->add(fstmt, "if (%s = %s %s %s) goto L%d;\n", variable_name, left_operand, assignement_type, right_operand, *lx);
                     break;
                 default:
                     fstmt->add(fstmt, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
@@ -258,7 +302,11 @@ arithmetic_gen (struct stack_t  * stk_decl,
                     break;
                 case IFEXPR:
                     add_tab(fstmt, indent);
-                    fstmt->add(fstmt, "if (%s = %s)", variable_name, assignement_type);
+                    fstmt->add(fstmt, "if (%s = %s) goto L%d; L%d:\n", variable_name, assignement_type, *lx, *lx);
+                    break;
+                case IFELSE:
+                    add_tab(fstmt, indent);
+                    fstmt->add(fstmt, "if (%s = %s) goto L%d;\n", variable_name, assignement_type, *lx);
                     break;
                 default:
                     fprintf(stderr, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
@@ -355,7 +403,11 @@ arithmetic_gen (struct stack_t  * stk_decl,
                 break;
             case IFEXPR:
                 add_tab(fstmt, indent);
-                fstmt->add(fstmt, "if (%s %s %s)\n", left_operand, expr_type, right_operand);
+                fstmt->add(fstmt, "if (%s %s %s) goto L%d; L%d:\n", left_operand, expr_type, right_operand, *lx, *lx);
+                break;
+            case IFELSE:
+                add_tab(fstmt, indent);
+                fstmt->add(fstmt, "if (%s %s %s) goto L%d;\n", left_operand, expr_type, right_operand, *lx);
                 break;
             default:
                 fprintf(stderr, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
@@ -376,7 +428,11 @@ arithmetic_gen (struct stack_t  * stk_decl,
             case IFEXPR:
                 add_tab(fstmt, indent);
                 //printf("indent for if (%s) = %d\n", expr_type, indent);
-                fstmt->add(fstmt, "if (%s)\n", expr_type);
+                fstmt->add(fstmt, "if (%s) goto L%d; L%d:\n", expr_type, *lx, *lx);
+                break;
+            case IFELSE:
+                add_tab(fstmt, indent);
+                fstmt->add(fstmt, "if (%s) goto L%d;\n", expr_type, *lx);
                 break;
             default:
                 fprintf(stderr, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);

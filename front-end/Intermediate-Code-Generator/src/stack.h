@@ -13,7 +13,8 @@ typedef char * v_t;
 
 typedef enum {EXPRESSION,
               CONDITION,
-              IFEXPR}
+              IFEXPR,
+              IFELSE}
         arithmetic_t;
 
 struct buf_t
