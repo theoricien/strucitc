@@ -140,10 +140,6 @@ unary_operator
     {log2("unary_operator -> pointer");
     $$ = $1;}
 
-    | '+'
-    {log2("unary_operator -> +");
-    $$ = "+";}
-
     | '-'
     {log2("unary_operator -> -");
     $$ = "-";}
@@ -317,10 +313,10 @@ init_declarator
 
 type_specifier
     : VOID
-    {$$ = build_leaf(TT,$1);}
+    {$$ = build_leaf(TID,$1);}
 
     | INT
-    {$$ = build_leaf(TT,$1);}
+    {$$ = build_leaf(TID,$1);}
 
     | struct_or_union_specifier
 		{log2("type_specifier -> struct_or_union_specifier");
@@ -385,7 +381,7 @@ pointer_direct_declarator
 
 		:pointer direct_declarator_pointer
 		{log2("pointer_direct_declarator -> pointer direct_declarator_pointer");
-    $$ = build_opr("pointer_direct_declarator", $1,$2);}
+    $$ = build_uopr("pointer_direct_declarator",$2);}
 
     // int *
     | pointer
@@ -451,7 +447,8 @@ direct_declarator_function_pointer
 
 pointer
     : '*'
-    {$$ = build_leaf(TID,"*");}
+    {$$ = "pointer";}
+		//$$ = build_leaf(TID,"*");}
     ;
 
 parameter_list
@@ -684,7 +681,9 @@ yyerror (char const *s)
 	FILE* fd = fopen(fname,"r");
 	char *code_line;
 	get_nth_line(fd,line_count - 1,&code_line);
-	printf("line %d: %s\n%*s\n%*s\n",line_count,code_line, column_count, "^", column_count, s);
+	char *tmp = calloc(10,1);
+	sprintf(tmp,"%d",line_count);
+	printf("line %d: %s\n%*s\n%*s\n",line_count,code_line, (column_count + 7 + strlen(tmp)), "^", column_count, s);
 	exit(2);
 }
 

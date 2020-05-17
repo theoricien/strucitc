@@ -123,7 +123,7 @@ node_t *build_func(node_t *func_name, node_t *arguments){
 
   tmp->function->name = func_name;
   if(arguments == NULL){
-    tmp->function->arguments = build_leaf(TT,"void");
+    tmp->function->arguments = build_leaf(TID,"void");
   }
   else{
     tmp->function->arguments = arguments;
@@ -215,7 +215,7 @@ void stringify(node_t * tree, int tab){
     printf(")\n");
   }
   else if(tree->type == TT){
-    printf("(%s : %s) \n","TID",tree->leaf->value);
+    printf("(%s : %s) \n","TT",tree->leaf->value);
   }
   else if(tree->type == TIF){
     printf("(%s)\n","TIF");

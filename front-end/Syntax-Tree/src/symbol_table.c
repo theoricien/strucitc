@@ -144,6 +144,12 @@ void print_decl(decl* decl){
   if(decl->type == TINT){
     strcpy(type,"int");
   }
+  else if(decl->type == FINT){
+    strcpy(type,"fint");
+  }
+  else if(decl->type == FVOID){
+    strcpy(type,"fvoid");
+  }
   else{
     strcpy(type,"void");
   }
@@ -216,8 +222,10 @@ symbol_table_block *init_symbol_table_block(){
 * return 1 if already declared, 0 if not
 **/
 int is_already_declared(char *identifier, symbol_table_block *block){
-  if(block->declarations != NULL){
-    return is_in(identifier,block->declarations);
+  if(block != NULL){
+    if(block->declarations != NULL){
+      return is_in(identifier,block->declarations);
+    }
   }
   else{
     return 0;
@@ -406,7 +414,7 @@ symbol_table *clone_symbol_table(symbol_table *table){
 *         =====================================================
 */
 
-symbol_table *build_symbol_table(node_t *tree){
+all_tables *build_symbol_table(node_t *tree){
 
   symbol_table *table = init_symbol_table();
   symbol_table *global_table = init_symbol_table();
@@ -418,10 +426,15 @@ symbol_table *build_symbol_table(node_t *tree){
 
   construct_table(tree,table,global_table,print_table);
 
-  print_symbol_table(print_table,0);
-  return table;
+  all_tables *tables = (struct all_tables*)malloc(sizeof(struct all_tables));
+  tables->table = print_table;
+  tables->global_table = global_table;
+
+  //print_symbol_table(print_table,0);
+  return tables;
 
 }
+
 
 /*
 *   global table is used to print the table at the end
@@ -438,6 +451,7 @@ void construct_table(node_t *tree, symbol_table *table, symbol_table *global_tab
   if(tree->type == TOP){
     if(!strcmp(tree->opr->optype,"function_definition")){
       symbol_table *new_table;
+      decl *tmp;
       if(is_any_declaration(table->definition_block)){
          new_table = init_symbol_table();
       }
@@ -449,6 +463,12 @@ void construct_table(node_t *tree, symbol_table *table, symbol_table *global_tab
         if(tree->opr->left->opr->right->type == TFUNC){
           new_block->context = malloc(strlen(tree->opr->left->opr->right->function->name->leaf->value));
           strcpy(new_block->context,tree->opr->left->opr->right->function->name->leaf->value);
+          if(!strcmp(tree->opr->left->opr->left->leaf->value,"int")){
+            tmp = build_decl(FINT,tree->opr->left->opr->right->function->name->leaf->value);
+          }
+          else{
+            tmp = build_decl(FVOID,tree->opr->left->opr->right->function->name->leaf->value);
+          }
         }
       }
 
@@ -457,6 +477,9 @@ void construct_table(node_t *tree, symbol_table *table, symbol_table *global_tab
       //print_symbol_table(global_table,0);
       add_all_declarations_to_block(block_exists(new_table,new_block->context),global_table->definition_block);
       add_all_declarations_to_block(block_exists(print_table,new_block->context),global_table->definition_block);
+
+
+      add_block_declaration(global_table->definition_block,tmp);
       //printf("%s\n",global_table->definition_block->declarations->current->name);
       //printf("\n\n\n");
       construct_table(tree->opr->left,new_table,global_table,print_table);
@@ -473,7 +496,7 @@ void construct_table(node_t *tree, symbol_table *table, symbol_table *global_tab
       if(tree->opr->right->type == TOP){
         construct_table(tree->opr->right,table,global_table,print_table);
       }
-      if((tree->opr->left->type == TT) && (tree->opr->right->type == TID)){
+      if((tree->opr->left->type == TID) && (tree->opr->right->type == TID)){
 
         decl *tmp;
         if(!strcmp(tree->opr->left->leaf->value,"int")){
@@ -499,7 +522,7 @@ void construct_table(node_t *tree, symbol_table *table, symbol_table *global_tab
 
 
     else if(!strcmp(tree->opr->optype,"declaration")){
-      if(tree->opr->left->type == TT && tree->opr->right->type == TID){
+      if(tree->opr->left->type == TID && tree->opr->right->type == TID){
         decl *tmp;
         if(!strcmp(tree->opr->left->leaf->value,"int")){
           tmp = build_decl(TINT,tree->opr->right->leaf->value);
@@ -520,7 +543,7 @@ void construct_table(node_t *tree, symbol_table *table, symbol_table *global_tab
 
       }
       //declaration of type: int i = 0;
-      else if(tree->opr->left->type == TT && tree->opr->right->type == TOP){
+      else if(tree->opr->left->type == TID && tree->opr->right->type == TOP){
         decl *tmp;
 
         if(!strcmp(tree->opr->left->leaf->value,"int")){
@@ -585,7 +608,7 @@ void case_program_in_construct_table(node_t *tree, symbol_table *table, symbol_t
 
 void case_global_declaration_in_construct_table(node_t *tree, symbol_table *global_table){
   //printf("%d\n",tree->opr->left->type);
-  if(tree->opr->left->type == TT && tree->opr->right->type == TID){
+  if(tree->opr->left->type == TID && tree->opr->right->type == TID){
     decl *tmp;
     if(!strcmp(tree->opr->left->leaf->value,"int")){
       tmp = build_decl(TINT,tree->opr->right->leaf->value);
@@ -596,7 +619,7 @@ void case_global_declaration_in_construct_table(node_t *tree, symbol_table *glob
     add_block_declaration(global_table->definition_block,tmp);
   }
   //declaration of type: int i = 0;
-  else if(tree->opr->left->type == TT && tree->opr->right->type == TOP){
+  else if(tree->opr->left->type == TID && tree->opr->right->type == TOP){
     decl *tmp;
 
     if(!strcmp(tree->opr->left->leaf->value,"int")){

@@ -24,6 +24,12 @@ struct symbol_table
   symbol_table* next_symbol_table;
 };
 
+struct all_tables
+{
+  symbol_table *table;
+  symbol_table *global_table;
+};
+
 
 // Operations on declarations within a block
 int is_in(char*, declaration_list *);
@@ -53,7 +59,7 @@ void add_block_to_table(symbol_table *, symbol_table_block *);
 symbol_table *clone_symbol_table(symbol_table *);
 symbol_table_block *block_exists(symbol_table *, char *);
 void print_symbol_table(symbol_table *, int);
-symbol_table *build_symbol_table(node_t *);
+all_tables *build_symbol_table(node_t *);
 void construct_table(node_t *, symbol_table *, symbol_table *, symbol_table *);
 
 void case_global_declaration_in_construct_table(node_t *, symbol_table *);
