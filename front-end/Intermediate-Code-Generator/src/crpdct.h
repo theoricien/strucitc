@@ -14,7 +14,7 @@ struct crpdct_t
     char            * be;
     struct crpdct_t * next;
     void            (*add) (struct crpdct_t *, char *, char *);
-    struct crpdct_t * (*clone) (struct crpdct_t *);
+    struct crpdct_t *(*clone) (struct crpdct_t *);
 };
 
 struct crpdct_t *init_crpcdt (void);

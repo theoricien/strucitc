@@ -27,9 +27,9 @@ _crpdct_add (struct crpdct_t    * ct,
     /* 0 element */
 	if (ct->fe == NULL)
 	{
-		ct->fe = strdup(fe);
-		ct->be = strdup(be);
-    }
+		  ct->fe = strdup(fe);
+		  ct->be = strdup(be);
+  }
 	else
 	{
 	    struct crpdct_t *tmp;
@@ -78,6 +78,9 @@ find_be_of (struct crpdct_t * ct,
     last_occurence = NULL;
     tmp = ct;
 
+    if (ct->fe == NULL)
+      return NULL;
+
     if (!strcmp(tmp->fe, fe))
         last_occurence = tmp->be;
 
@@ -101,6 +104,9 @@ find_fe_of (struct crpdct_t * ct,
     last_occurence = NULL;
     tmp = ct;
 
+    if (ct->be == NULL)
+      return NULL;
+
     if (!strcmp(tmp->be, be))
         last_occurence = tmp->fe;
 
@@ -117,14 +123,14 @@ find_fe_of (struct crpdct_t * ct,
 void
 print_ct (struct crpdct_t *ct)
 {
-	struct crpdct_t *tmp;
-	tmp = ct;
+  	struct crpdct_t *tmp;
+  	tmp = ct;
 
-	printf("\n--   FE   --  BE  --\n");
-	while (tmp != NULL)
-	{
-        printf("-- %s -- %s --\n", tmp->fe, tmp->be);
-		tmp = tmp->next;
-	}
-	printf("----------------------\n");
+    printf("\n--   FE   --  BE  --\n");
+    while (tmp != NULL)
+    {
+      printf("-- %s -- %s --\n", tmp->fe, tmp->be);
+		  tmp = tmp->next;
+    }
+    printf("----------------------\n");
 }

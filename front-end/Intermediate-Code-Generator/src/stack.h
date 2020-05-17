@@ -7,7 +7,7 @@
  * Values: false: 0, true: 1
  */
 typedef enum {false, true} bool_t;
-typedef unsigned int size_t;
+//typedef unsigned int size_t;
 typedef char * v_t;
 
 
@@ -74,6 +74,7 @@ struct stack_t
 
 	struct mcell_t 	*(*pop) (struct stack_t *);
 	struct mcell_t 	*(*push) (struct stack_t *, v_t);
+	void         	(*push_stack) (struct stack_t *, struct stack_t *);
 	struct mcell_t  *(*get) (struct stack_t *, int);
 	struct stack_t  *(*clone) (struct stack_t *, size_t, size_t);
 	bool_t 			(*is_empty) (struct stack_t *);
@@ -86,6 +87,7 @@ struct dllist_t *init_dllist (void);
 struct stack_t *init_stack (void);
 struct mcell_t *pop (struct stack_t *);
 struct mcell_t *push (struct stack_t *, v_t);
+void push_stack (struct stack_t *, struct stack_t *);
 struct mcell_t *get (struct stack_t *, int);
 struct stack_t *_stack_clone (struct stack_t *, size_t, size_t);
 bool_t is_empty (struct stack_t *);

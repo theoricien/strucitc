@@ -81,6 +81,7 @@ init_stack (void)
 
 	stk->pop = pop;
 	stk->push = push;
+	stk->push_stack = push_stack;
 	stk->get = get;
 	stk->clone = _stack_clone;
 	stk->is_empty = is_empty;
@@ -122,6 +123,7 @@ struct mcell_t 	*
 push (struct stack_t *stk,
 	  v_t            value)
 {
+	printf("PUSHING %s\n", value);
 	assert(stk != NULL, "NULL stack_t passed as argument");
 
 	if (stk->is_empty(stk))
@@ -139,8 +141,25 @@ push (struct stack_t *stk,
 	}
     stk->size++;
 
+	stk->print_stack(stk);
+
 	return stk->top->curr;
 }
+
+void
+push_stack (struct stack_t * stk,
+            struct stack_t * to_push)
+{
+	  printf("PUSHING\n");
+		to_push->print_stack(to_push);
+		printf("TO\n");
+    for (size_t i = 0; i < to_push->size; i++)
+    {
+        stk->push(stk, to_push->get(to_push, i)->value);
+    }
+		stk->print_stack(stk);
+}
+
 
 struct mcell_t *
 get (struct stack_t * stk,

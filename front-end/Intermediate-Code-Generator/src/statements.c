@@ -167,7 +167,7 @@ search_next_semicolon (struct stack_t   * stk,
 }
 
 /*
- * Modifie stk_stmt & stk_decl pour avoir uniquement un code à 3 adresses
+ * Modifie stk_stmt & stk_decl pour avoir uniquement un code Ã  3 adresses
  */
 void
 arithmetic_gen (struct stack_t  * stk_decl,
@@ -187,6 +187,7 @@ arithmetic_gen (struct stack_t  * stk_decl,
 
     expr_type = stk_stmt->get(stk_stmt, from + 1)->value;
     variable_name = find_be_of(ct, stk_stmt->get(stk_stmt, from + 2)->value);
+    print_ct(ct);
     if (!strcmp(expr_type, "="))
     {
         register char *assignement_type;
@@ -226,12 +227,15 @@ arithmetic_gen (struct stack_t  * stk_decl,
                 strcpy(left_cell_operand->value, variable_name);
                 strcat(left_cell_operand->value, "l");
                 /* v0 -> v0l (=v0 left)*/
-                stk_decl->push(stk_decl, left_cell_operand->value);
-                stk_decl->push(stk_decl, "int");
-                stk_decl->push(stk_decl, "declaration");
-
-                add_tab(fdecl, indent);
-                fdecl->add(fdecl, "int %s;\n", left_cell_operand->value);
+                if (find_fe_of(ct, left_cell_operand->value) == NULL)
+                {
+                    stk_decl->push(stk_decl, left_cell_operand->value);
+                    stk_decl->push(stk_decl, "int");
+                    stk_decl->push(stk_decl, "declaration");
+                    ct->add(ct, left_cell_operand->value, left_cell_operand->value);
+                    add_tab(fdecl, indent);
+                    fdecl->add(fdecl, "int %s;\n", left_cell_operand->value);
+                }
                 /* left_operand = v0l */
                 left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 4, &end_left_operand, fdecl, fstmt, left_cell_operand->value, indent);
             }
@@ -252,12 +256,15 @@ arithmetic_gen (struct stack_t  * stk_decl,
                 strcpy(right_cell_operand->value, variable_name);
                 strcat(right_cell_operand->value, "r");
                 /* v0 -> v0r (=v0 right)*/
-                stk_decl->push(stk_decl, right_cell_operand->value);
-                stk_decl->push(stk_decl, "int");
-                stk_decl->push(stk_decl, "declaration");
-
-                add_tab(fdecl, indent);
-                fdecl->add(fdecl, "int %s;\n", right_cell_operand->value);
+                if (find_fe_of(ct, right_cell_operand->value) == NULL)
+                {
+                  stk_decl->push(stk_decl, right_cell_operand->value);
+                  stk_decl->push(stk_decl, "int");
+                  stk_decl->push(stk_decl, "declaration");
+                  ct->add(ct, right_cell_operand->value, right_cell_operand->value);
+                  add_tab(fdecl, indent);
+                  fdecl->add(fdecl, "int %s;\n", right_cell_operand->value);
+                }
 
                 /* right_operand = v0r */
                 right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fdecl, fstmt, right_cell_operand->value, indent);
@@ -353,12 +360,15 @@ arithmetic_gen (struct stack_t  * stk_decl,
             strcpy(left_cell_operand->value, variable_name);
             strcat(left_cell_operand->value, "l");
             /* v0 -> v0l (=v0 left)*/
-            stk_decl->push(stk_decl, left_cell_operand->value);
-            stk_decl->push(stk_decl, "int");
-            stk_decl->push(stk_decl, "declaration");
-
-            add_tab(fdecl, indent);
-            fdecl->add(fdecl, "int %s;\n", left_cell_operand->value);
+            if (find_fe_of(ct, left_cell_operand->value) == NULL)
+            {
+              stk_decl->push(stk_decl, left_cell_operand->value);
+              stk_decl->push(stk_decl, "int");
+              stk_decl->push(stk_decl, "declaration");
+              ct->add(ct, left_cell_operand->value, left_cell_operand->value);
+              add_tab(fdecl, indent);
+              fdecl->add(fdecl, "int %s;\n", left_cell_operand->value);
+            }
             /* left_operand = v0l */
             left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 2, &end_left_operand, fdecl, fstmt, left_cell_operand->value, indent);
         }
@@ -379,13 +389,15 @@ arithmetic_gen (struct stack_t  * stk_decl,
             strcpy(right_cell_operand->value, variable_name);
             strcat(right_cell_operand->value, "r");
             /* v0 -> v0r (=v0 right)*/
-            stk_decl->push(stk_decl, right_cell_operand->value);
-            stk_decl->push(stk_decl, "int");
-            stk_decl->push(stk_decl, "declaration");
-
-            add_tab(fdecl, indent);
-            fdecl->add(fdecl, "int %s;\n", right_cell_operand->value);
-
+            if (find_fe_of(ct, right_cell_operand->value) == NULL)
+            {
+              stk_decl->push(stk_decl, right_cell_operand->value);
+              stk_decl->push(stk_decl, "int");
+              stk_decl->push(stk_decl, "declaration");
+              ct->add(ct, right_cell_operand->value, right_cell_operand->value);
+              add_tab(fdecl, indent);
+              fdecl->add(fdecl, "int %s;\n", right_cell_operand->value);
+            }
             /* right_operand = v0r */
             right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fdecl, fstmt, right_cell_operand->value, indent);
         }
@@ -494,12 +506,15 @@ to_one_addr (struct stack_t  * stk_decl,
             strcpy(left_cell_operand->value, vname);
             strcat(left_cell_operand->value, "l");
             /* v0 -> v0l (=v0 left)*/
-            stk_decl->push(stk_decl, left_cell_operand->value);
-            stk_decl->push(stk_decl, "int");
-            stk_decl->push(stk_decl, "declaration");
-
-            add_tab(fd, indent);
-            fd->add(fd, "int %s;\n", left_cell_operand->value);
+            if (find_fe_of(ct, left_cell_operand->value) == NULL)
+            {
+              stk_decl->push(stk_decl, left_cell_operand->value);
+              stk_decl->push(stk_decl, "int");
+              stk_decl->push(stk_decl, "declaration");
+              ct->add(ct, left_cell_operand->value, left_cell_operand->value);
+              add_tab(fd, indent);
+              fd->add(fd, "int %s;\n", left_cell_operand->value);
+            }
             left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 1, &end_left_operand, fd, fs, left_cell_operand->value, indent);
         }
 
@@ -520,12 +535,15 @@ to_one_addr (struct stack_t  * stk_decl,
             strcpy(right_cell_operand->value, vname);
             strcat(right_cell_operand->value, "r");
             /* v0 -> v0r (=v0 right)*/
-            stk_decl->push(stk_decl, right_cell_operand->value);
-            stk_decl->push(stk_decl, "int");
-            stk_decl->push(stk_decl, "declaration");
-
-            add_tab(fd, indent);
-            fd->add(fd, "int %s;\n", right_cell_operand->value);
+            if (find_fe_of(ct, right_cell_operand->value) == NULL)
+            {
+              stk_decl->push(stk_decl, right_cell_operand->value);
+              stk_decl->push(stk_decl, "int");
+              stk_decl->push(stk_decl, "declaration");
+              ct->add(ct, right_cell_operand->value, right_cell_operand->value);
+              add_tab(fd, indent);
+              fd->add(fd, "int %s;\n", right_cell_operand->value);
+            }
             right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fd, fs, right_cell_operand->value, indent);
         }
 

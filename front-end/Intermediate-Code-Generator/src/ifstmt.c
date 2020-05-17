@@ -142,12 +142,12 @@ search_next (struct stack_t * stk,
 void
 if_declaration (struct stack_t *stk_decl)
 {
-    stk_decl->push(stk_decl, "a");
     stk_decl->push(stk_decl, "int");
+    stk_decl->push(stk_decl, "a");
     stk_decl->push(stk_decl, "declaration");
 
-    stk_decl->push(stk_decl, "b");
     stk_decl->push(stk_decl, "int");
+    stk_decl->push(stk_decl, "b");
     stk_decl->push(stk_decl, "declaration");
 }
 
