@@ -6,7 +6,7 @@ init_crpcdt (void)
     struct crpdct_t *tmp;
 
     tmp = (struct crpdct_t *) malloc (sizeof(struct crpdct_t));
-    assert(tmp != NULL, "Memory error, malloc returns NULL\n");
+    assert(tmp != NULL, "Memory error, malloc returns NULL for crpdct_t\n");
 
     tmp->fe = NULL;
     tmp->be = NULL;

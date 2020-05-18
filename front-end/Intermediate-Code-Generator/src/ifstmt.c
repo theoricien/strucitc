@@ -39,11 +39,11 @@ if_gen (struct stack_t  * far_stk_decl,
     vx = *v;
     *l = *l + 1;
 
-    if_declaration(stk_decl);
+    //if_declaration(stk_decl);
 
     add_tab(decl_buf, curr_indent);
     decl_buf->add(decl_buf, "{\n");
-    declaration(stk_decl, ct, decl_buf, &vx, curr_indent + 1);
+    //declaration(stk_decl, ct, decl_buf, &vx, curr_indent + 1);
 
     /* COMPOUND STATEMENT */
     //old_stk_stmt->print_stack(old_stk_stmt);
@@ -51,7 +51,8 @@ if_gen (struct stack_t  * far_stk_decl,
     //new_stk_stmt->print_stack(new_stk_stmt);
     statements(stk_decl, new_stk_stmt, ct, decl_buf, stmt_buf, &vx, l, 0, new_stk_stmt->size, curr_indent + 1);
     add_tab(stmt_buf, curr_indent);
-    stmt_buf->add(stmt_buf, "}\n");
+    stmt_buf->add(stmt_buf, "} L%d:\n", *l);
+    *l = *l + 1;
 }
 
 void
@@ -109,6 +110,7 @@ ifelse_gen (struct stack_t  * far_stk_decl,
     elsestmt_buf->add(elsestmt_buf, "} ");
     *l -= 1;
     /* IF PART */
+    add_tab(ifdecl_buf, curr_indent);
     ifdecl_buf->add(ifdecl_buf, "L%d: {\n", *l);
     statements(stk_decl, if_stk_stmt, ct, ifdecl_buf, ifstmt_buf, &vx, l, 0, if_stk_stmt->size, curr_indent + 1);
     add_tab(ifstmt_buf, curr_indent);
@@ -149,41 +151,4 @@ if_declaration (struct stack_t *stk_decl)
     stk_decl->push(stk_decl, "int");
     stk_decl->push(stk_decl, "b");
     stk_decl->push(stk_decl, "declaration");
-}
-
-struct buf_t *
-init_buf (void)
-{
-    struct buf_t *tmp;
-
-    tmp = (struct buf_t *) malloc (sizeof(struct buf_t));
-
-    tmp->size = 1024;
-    tmp->string = (char *) calloc (1024, 1);
-    tmp->add = _buf_add_buf;
-
-    return tmp;
-}
-
-void
-_buf_add_buf (struct buf_t   * b,
-              const char     * fmt,
-              ...)
-{
-    struct buf_t *to_add;
-    va_list args;
-
-    to_add = init_buf();
-
-    va_start(args, fmt);
-    vsprintf(to_add->string, fmt, args);
-    va_end(args);
-
-    while (strlen(to_add->string) + strlen(b->string) > b->size)
-    {
-        b->string = (char *) realloc(b->string, b->size * 2);
-        b->size *= 2;
-    }
-
-    sprintf(b->string + strlen(b->string), "%s", to_add->string);
 }

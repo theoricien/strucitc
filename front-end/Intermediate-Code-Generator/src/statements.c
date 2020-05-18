@@ -28,6 +28,8 @@ statements (struct stack_t  * stk_decl,
     for (size_t i = from; i < to; i++)
     {
         type = stk_stmt->get(stk_stmt, i)->value;
+        //printf("TYPE: %s -- FROM: %x -- I: %x -- TO: %x\n", type, from, i, to);
+        //stk_stmt->print_stack(stk_stmt);
         /* expr -> .... -> ;*/
         /* The semicolon is the end of an expr */
         if (!strcmp(type, "expr"))
@@ -110,10 +112,102 @@ statements (struct stack_t  * stk_decl,
             fstmt->add(fstmt, "%s\n", elsestmt_buf->string);
             fstmt->add(fstmt, "%s\n", ifdecl_buf->string);
             fstmt->add(fstmt, "%s\n", ifstmt_buf->string);
+
+            elsedecl_buf->free(elsedecl_buf);
+            elsestmt_buf->free(elsestmt_buf);
+            ifdecl_buf->free(ifdecl_buf);
+            ifstmt_buf->free(ifstmt_buf);
+        }
+        else if (!strcmp(type, "func"))
+        {
+            struct buf_t *decl_buf;
+            struct buf_t *stmt_buf;
+            unsigned int middle;
+
+            decl_buf = init_buf();
+            stmt_buf = init_buf();
+
+            middle = search_next(stk_stmt, i, "endarg");
+            idx = search_next(stk_stmt, i, "endfun");
+            fundef_gen(stk_decl, stk_stmt, ct, i, middle, idx, v, l, decl_buf, stmt_buf, indent);
+            fstmt->add(fstmt, "%s\n", decl_buf->string);
+            fstmt->add(fstmt, "%s\n", stmt_buf->string);
+        }
+        else if (!strcmp(type, "return"))
+        {
+            idx = search_next_semicolon(stk_stmt, i);
+            add_tab(fstmt, indent);
+            fstmt->add(fstmt, "return ");
+            statements(stk_decl, stk_stmt, ct, fdecl, fstmt, v, l, i + 1, idx, indent);
+            fstmt->add(fstmt, "\n");
+        }
+        else if (!strcmp(type, "while"))
+        {
+            unsigned int end_cond;
+            struct buf_t *decl_buf;
+            struct buf_t *stmt_buf;
+
+            decl_buf = init_buf();
+            stmt_buf = init_buf();
+
+            /* if (cond) { ... } */
+            idx = search_end_while(stk_stmt, i + 1);
+            assert(idx != (unsigned int) -1, "idx = search_end_while(stk_stmt, i + 1) returns -1");
+            //printf("endif found at %x\n", idx);
+
+            /* end_cond = "then" */
+            end_cond = search_next(stk_stmt, i, "do");
+            assert(end_cond != (unsigned int) -1, "end_cond = search_end_cond(stk_stmt, i) returns -1");
+            //printf("then found at %x\n", end_cond);
+
+            /* goto LX; L(X+1): { While Code } */
+            while_gen(stk_decl, stk_stmt, ct, i, end_cond, idx, v, l, decl_buf, stmt_buf, indent);
+            /* LX: if (condition) goto L(X+1);*/
+            arithmetic_gen(stk_decl, stk_stmt, ct, i, end_cond, decl_buf, stmt_buf, v, l, WHILE, indent);
+            //printf(decl_buf->string);
+            //printf(stmt_buf->string);
+
+            fstmt->add(fstmt, "%s\n", decl_buf->string);
+            fstmt->add(fstmt, "%s\n", stmt_buf->string);
+        }
+        else if (!strcmp(type, "for"))
+        {
+            unsigned int second_part;
+            unsigned int third_part;
+            unsigned int dofor;
+            struct buf_t *decl_buf;
+            struct buf_t *stmt_buf;
+
+            decl_buf = init_buf();
+            stmt_buf = init_buf();
+
+            second_part = search_next(stk_stmt, i, "enddecl");
+            assert(second_part != (unsigned int) -1, "second_part = search_next(stk_stmt, i, \"enddecl\") returns -1");
+
+            third_part = search_next(stk_stmt, i, "endcond");
+            assert(third_part != (unsigned int) -1, "third_part = search_next(stk_stmt, i, \"endcond\") returns -1");
+
+            dofor = search_next(stk_stmt, i, "endstep");
+            assert(dofor != (unsigned int) -1, "dofor = search_next(stk_stmt, i, \"endstep\") returns -1");
+
+            idx = search_end_for(stk_stmt, i + 1);
+            assert(idx != (unsigned int) -1, "idx = search_end_if(stk_stmt, i + 1) returns -1");
+
+            /* goto LX; L(X+1): { While Code } */
+            for_gen(stk_decl, stk_stmt, ct, i, second_part, third_part, dofor, idx, v, l, decl_buf, stmt_buf, fdecl, fstmt, indent);
+            /* LX: if (condition) goto L(X+1);*/
+            arithmetic_gen(stk_decl, stk_stmt, ct, second_part + 1, third_part, decl_buf, stmt_buf, v, l, WHILE, indent);
+            //printf(decl_buf->string);
+            //printf(stmt_buf->string);
+
+            fstmt->add(fstmt, "%s\n", decl_buf->string);
+            fstmt->add(fstmt, "%s\n", stmt_buf->string);
         }
         else
         {
-            fprintf(stderr, "[TypeError] Type not found: %s\n", type);
+            fprintf(stderr, "[TypeError] Type not found: %s at from 0x%08x\n", type, from);
+            stk_stmt->print_stack(stk_stmt);
+            exit(2);
         }
         i = idx;
     }
@@ -156,6 +250,56 @@ search_end_if (struct stack_t   * stk,
 }
 
 unsigned int
+search_end_while (struct stack_t   * stk,
+                  unsigned int     current_index)
+{
+    //stk->print_stack(stk);
+    //printf("for (size_t i = %d; i < %d; i++)\n", current_index, stk->size);
+    for (size_t i = current_index; i < stk->size; i++)
+    {
+        //printf("i = %x with %s\n", i, stk->get(stk, i)->value);
+        if (!strcmp(stk->get(stk, i)->value, "while"))
+        {
+            i = search_end_while(stk, i + 1);
+            continue;
+        }
+
+        if (!strcmp(stk->get(stk, i)->value, "endwhile"))
+        {
+            //printf("End at: %d\n", i);
+            return i;
+        }
+    }
+    //printf("Returns -1 !!\n");
+    return (unsigned int) -1;
+}
+
+unsigned int
+search_end_for (struct stack_t   * stk,
+                unsigned int     current_index)
+{
+    //stk->print_stack(stk);
+    //printf("for (size_t i = %d; i < %d; i++)\n", current_index, stk->size);
+    for (size_t i = current_index; i < stk->size; i++)
+    {
+        //printf("i = %x with %s\n", i, stk->get(stk, i)->value);
+        if (!strcmp(stk->get(stk, i)->value, "for"))
+        {
+            i = search_end_for(stk, i + 1);
+            continue;
+        }
+
+        if (!strcmp(stk->get(stk, i)->value, "endfor"))
+        {
+            //printf("End at: %d\n", i);
+            return i;
+        }
+    }
+    //printf("Returns -1 !!\n");
+    return (unsigned int) -1;
+}
+
+unsigned int
 search_next_semicolon (struct stack_t   * stk,
                        unsigned int     current_index)
 {
@@ -187,7 +331,7 @@ arithmetic_gen (struct stack_t  * stk_decl,
 
     expr_type = stk_stmt->get(stk_stmt, from + 1)->value;
     variable_name = find_be_of(ct, stk_stmt->get(stk_stmt, from + 2)->value);
-    print_ct(ct);
+    //print_ct(ct);
     if (!strcmp(expr_type, "="))
     {
         register char *assignement_type;
@@ -283,9 +427,13 @@ arithmetic_gen (struct stack_t  * stk_decl,
                     break;
                 case IFEXPR:
                     add_tab(fstmt, indent);
-                    fstmt->add(fstmt, "if (%s = %s %s %s) goto L%d; L%d:\n", variable_name, left_operand, assignement_type, right_operand, *lx, *lx);
+                    fstmt->add(fstmt, "if (%s = %s %s %s) goto L%d; goto L%d; L%d:\n", variable_name, left_operand, assignement_type, right_operand, *lx, *lx + 1, *lx);
                     break;
                 case IFELSE:
+                    add_tab(fstmt, indent);
+                    fstmt->add(fstmt, "if (%s = %s %s %s) goto L%d;\n", variable_name, left_operand, assignement_type, right_operand, *lx);
+                    break;
+                case WHILE:
                     add_tab(fstmt, indent);
                     fstmt->add(fstmt, "if (%s = %s %s %s) goto L%d;\n", variable_name, left_operand, assignement_type, right_operand, *lx);
                     break;
@@ -294,6 +442,26 @@ arithmetic_gen (struct stack_t  * stk_decl,
                     break;
             }
 
+        }
+        else if (!strcmp(assignement_type, "sizeof"))
+        {
+            fstmt->add(fstmt, "%s = %s; /* sizeof */\n", variable_name, sizeof_int());
+        }
+        else if (!strcmp(assignement_type, "funcall"))
+        {
+            unsigned int end;
+            /*
+            * from + 4 = function name
+            * from + 5 = expression
+            * from + 5 + len(expression) = endfuncall
+            */
+
+            end = search_next(stk_stmt, from + 5, ";") - 1;
+            add_tab(fstmt, indent);
+            fstmt->add(fstmt, "%s = %s (", variable_name, stk_stmt->get(stk_stmt, from + 4)->value);
+            arithmetic_gen(stk_decl, stk_stmt, ct, from + 5, end, fdecl, fstmt, vx, lx, CONDITION, indent);
+            fstmt->add(fstmt, ");\n");
+            to = end + 3;
         }
         else if (isdigit(assignement_type) ||
                  isidentifier(assignement_type))
@@ -309,9 +477,13 @@ arithmetic_gen (struct stack_t  * stk_decl,
                     break;
                 case IFEXPR:
                     add_tab(fstmt, indent);
-                    fstmt->add(fstmt, "if (%s = %s) goto L%d; L%d:\n", variable_name, assignement_type, *lx, *lx);
+                    fstmt->add(fstmt, "if (%s = %s) goto L%d; goto L%d; L%d:\n", variable_name, assignement_type, *lx, *lx + 1, *lx);
                     break;
                 case IFELSE:
+                    add_tab(fstmt, indent);
+                    fstmt->add(fstmt, "if (%s = %s) goto L%d;\n", variable_name, assignement_type, *lx);
+                    break;
+                case WHILE:
                     add_tab(fstmt, indent);
                     fstmt->add(fstmt, "if (%s = %s) goto L%d;\n", variable_name, assignement_type, *lx);
                     break;
@@ -319,6 +491,10 @@ arithmetic_gen (struct stack_t  * stk_decl,
                     fprintf(stderr, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
                     break;
             }
+        }
+        else
+        {
+            fprintf(stderr, "[!] Operator not recognized in the assignment expression: %s\n", assignement_type);
         }
     }
     else if (!strcmp(expr_type, "==") ||
@@ -415,9 +591,13 @@ arithmetic_gen (struct stack_t  * stk_decl,
                 break;
             case IFEXPR:
                 add_tab(fstmt, indent);
-                fstmt->add(fstmt, "if (%s %s %s) goto L%d; L%d:\n", left_operand, expr_type, right_operand, *lx, *lx);
+                fstmt->add(fstmt, "if (%s %s %s) goto L%d; goto L%d; L%d:\n", left_operand, expr_type, right_operand, *lx, *lx + 1, *lx);
                 break;
             case IFELSE:
+                add_tab(fstmt, indent);
+                fstmt->add(fstmt, "if (%s %s %s) goto L%d;\n", left_operand, expr_type, right_operand, *lx);
+                break;
+            case WHILE:
                 add_tab(fstmt, indent);
                 fstmt->add(fstmt, "if (%s %s %s) goto L%d;\n", left_operand, expr_type, right_operand, *lx);
                 break;
@@ -426,13 +606,31 @@ arithmetic_gen (struct stack_t  * stk_decl,
                 break;
         }
     }
+    else if (!strcmp(expr_type, "sizeof"))
+    {
+        fstmt->add(fstmt, "%s;\n", sizeof_int());
+    }
+    else if (!strcmp(expr_type, "funcall"))
+    {
+        unsigned int end;
+        /*
+            * from + 4 = function name
+            * from + 5 = expression
+            * from + 5 + len(expression) = endfuncall
+            */
+        end = search_next(stk_stmt, from + 2, "endfuncall");
+        add_tab(fstmt, indent);
+        fstmt->add(fstmt, "%s (", stk_stmt->get(stk_stmt, from + 2)->value);
+        arithmetic_gen(stk_decl, stk_stmt, ct, from + 3, end, fdecl, fstmt, vx, lx, CONDITION, indent);
+        fstmt->add(fstmt, ");\n");
+    }
     else if (isdigit(expr_type) ||
              isidentifier(expr_type))
     {
         switch (output_type)
         {
             case EXPRESSION:
-                fprintf(stderr, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
+                fstmt->add(fstmt, "%s;", expr_type);
                 break;
             case CONDITION:
                 fstmt->add(fstmt, "%s", expr_type);
@@ -440,16 +638,25 @@ arithmetic_gen (struct stack_t  * stk_decl,
             case IFEXPR:
                 add_tab(fstmt, indent);
                 //printf("indent for if (%s) = %d\n", expr_type, indent);
-                fstmt->add(fstmt, "if (%s) goto L%d; L%d:\n", expr_type, *lx, *lx);
+                fstmt->add(fstmt, "if (%s) goto L%d; goto L%d; L%d:\n", expr_type, *lx, *lx + 1, *lx);
                 break;
             case IFELSE:
                 add_tab(fstmt, indent);
+                fstmt->add(fstmt, "if (%s) goto L%d;\n", expr_type, *lx);
+                break;
+            case WHILE:
+                add_tab(fstmt, indent);
+                //printf("indent for if (%s) = %d\n", expr_type, indent);
                 fstmt->add(fstmt, "if (%s) goto L%d;\n", expr_type, *lx);
                 break;
             default:
                 fprintf(stderr, "[!] Output type not recognized: arithmetic_t[%d]\n", output_type);
                 break;
         }
+    }
+    else
+    {
+        fprintf(stderr, "[!] Operator not recognized in the expression: %s\n", expr_type);
     }
 }
 
@@ -469,6 +676,9 @@ to_one_addr (struct stack_t  * stk_decl,
     register const char *operand;
 
     operand = stk_stmt->get(stk_stmt, from)->value;
+    /*printf("T I got %s !\n", vname);
+    stk_stmt->print_stack(stk_stmt);
+    printf("From %x to %x\n", from, *to);*/
     if (!strcmp(operand, "+") ||
         !strcmp(operand, "-") ||
         !strcmp(operand, "*") ||
@@ -488,7 +698,7 @@ to_one_addr (struct stack_t  * stk_decl,
 
 
         //stk_stmt->print_stack(stk_stmt);
-        uexpr = stk_decl->get(stk_decl, stk_decl->size - 3)->value;
+        uexpr = vname;
         if (isdigit(stk_stmt->get(stk_stmt, from + 1)->value))
         {
             end_left_operand = from + 2;
@@ -553,6 +763,10 @@ to_one_addr (struct stack_t  * stk_decl,
 
         return uexpr;
     }
+    else if (!strcmp(operand, "sizeof"))
+    {
+        return sizeof_int();
+    }
     else
     {
         /* IDENTIFIER || CONSTANT */
@@ -601,4 +815,26 @@ add_tab (struct buf_t   * b,
 {
     for (size_t i = 0; i < indent; i++)
         b->add(b, "    ");
+}
+
+char *
+sizeof_int (void)
+{
+    char *tmp;
+
+    tmp = (char *) calloc (3, 1);
+    sprintf(tmp, "%d", sizeof(int));
+
+    return tmp;
+}
+
+char *
+sizeof_voidp (void)
+{
+    char *tmp;
+
+    tmp = (char *) calloc (3, 1);
+    sprintf(tmp, "%d", sizeof(void *));
+
+    return tmp;
 }

@@ -8,6 +8,9 @@
 #include "declarations.h"
 #include "crpdct.h"
 #include "ifstmt.h"
+#include "fundef.h"
+#include "whilestmt.h"
+#include "forstmt.h"
 
 void statements (struct stack_t *,
                  struct stack_t *,
@@ -21,6 +24,8 @@ void statements (struct stack_t *,
                  unsigned int);
 
 unsigned int search_end_if (struct stack_t *, unsigned int);
+unsigned int search_end_while (struct stack_t *, unsigned int);
+unsigned int search_end_for (struct stack_t *, unsigned int);
 unsigned int search_next_semicolon (struct stack_t *, unsigned int);
 
 void arithmetic_gen (struct stack_t *,
@@ -49,4 +54,6 @@ bool_t isidentifier (char *);
 bool_t isdigit (char *);
 void add_tab (struct buf_t *, unsigned int);
 
+char * sizeof_int (void);
+char * sizeof_voidp (void);
 #endif // STATEMENTS_H

@@ -1,3 +1,6 @@
+#ifndef IFSTMT_H
+#define IFSTMT_H
+
 #include <stdarg.h>
 #include "crpdct.h"
 #include "statements.h"
@@ -30,5 +33,5 @@ void ifelse_gen (struct stack_t *,
 unsigned int search_end_cond (struct stack_t *, unsigned int);
 unsigned int search_next (struct stack_t *, unsigned int, char *);
 void if_declaration (struct stack_t *);
-struct buf_t * init_buf (void);
-void _buf_add_buf (struct buf_t *, const char *, ...);
+
+#endif // IFSTMT_H
