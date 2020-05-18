@@ -23,6 +23,7 @@ if_gen (struct stack_t  * far_stk_decl,
     struct crpdct_t *ct;
     unsigned int vx;
     unsigned int start_statements;
+    unsigned int bk_l;
 
     /*
      * from + 0: last v_t of condition expression
@@ -37,7 +38,9 @@ if_gen (struct stack_t  * far_stk_decl,
     ct = far_ct->clone(far_ct);
     /* Temporary vX for inside-statement declarations */
     vx = *v;
-    *l = *l + 1;
+    bk_l = *l + 1;
+    *l = *l + 2;
+
 
     //if_declaration(stk_decl);
 
@@ -51,8 +54,7 @@ if_gen (struct stack_t  * far_stk_decl,
     //new_stk_stmt->print_stack(new_stk_stmt);
     statements(stk_decl, new_stk_stmt, ct, decl_buf, stmt_buf, &vx, l, 0, new_stk_stmt->size, curr_indent + 1);
     add_tab(stmt_buf, curr_indent);
-    stmt_buf->add(stmt_buf, "} L%d:\n", *l);
-    *l = *l + 1;
+    stmt_buf->add(stmt_buf, "} L%d:\n", bk_l);
 }
 
 void
@@ -76,6 +78,7 @@ ifelse_gen (struct stack_t  * far_stk_decl,
     struct crpdct_t *ct;
     unsigned int vx;
     unsigned int start_statements;
+    unsigned int bk_l;
 
     /*
      * from + 0: last v_t of condition expression
@@ -85,12 +88,14 @@ ifelse_gen (struct stack_t  * far_stk_decl,
     start_statements = from + 1;
     stk_decl = init_stack();
     if_stk_stmt = old_stk_stmt->clone(old_stk_stmt, start_statements, end_if);
+    //if_stk_stmt->print_stack(if_stk_stmt);
     else_stk_stmt = old_stk_stmt->clone(old_stk_stmt, end_if + 1, end_else);
 
     /* Clean & deep clone */
     ct = far_ct->clone(far_ct);
     /* Temporary vX for inside-statement declarations */
     vx = *v;
+    bk_l = *l + 1;
     *l = *l + 1;
 
     /*
@@ -106,16 +111,20 @@ ifelse_gen (struct stack_t  * far_stk_decl,
     add_tab(elsedecl_buf, curr_indent);
     elsedecl_buf->add(elsedecl_buf, "{\n");
     statements(stk_decl, else_stk_stmt, ct, elsedecl_buf, elsestmt_buf, &vx, l, 0, else_stk_stmt->size, curr_indent + 1);
+    add_tab(elsestmt_buf, curr_indent + 1);
+    elsestmt_buf->add(elsestmt_buf, "goto L%d;\n", *l);
+    bk_l = *l;
     add_tab(elsestmt_buf, curr_indent);
     elsestmt_buf->add(elsestmt_buf, "} ");
-    *l -= 1;
+
     /* IF PART */
     add_tab(ifdecl_buf, curr_indent);
-    ifdecl_buf->add(ifdecl_buf, "L%d: {\n", *l);
+    ifdecl_buf->add(ifdecl_buf, "L%d: {\n", *l - 1);
+    *l += 1;
     statements(stk_decl, if_stk_stmt, ct, ifdecl_buf, ifstmt_buf, &vx, l, 0, if_stk_stmt->size, curr_indent + 1);
     add_tab(ifstmt_buf, curr_indent);
-    ifstmt_buf->add(ifstmt_buf, "}\n");
-    *l = *l + 1;
+    ifstmt_buf->add(ifstmt_buf, "} L%d:\n", bk_l);
+    *l += 1;
 }
 
 unsigned int

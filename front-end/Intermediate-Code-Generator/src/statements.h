@@ -24,6 +24,7 @@ void statements (struct stack_t *,
                  unsigned int);
 
 unsigned int search_end_if (struct stack_t *, unsigned int);
+unsigned int search_next_else (struct stack_t *, unsigned int);
 unsigned int search_end_while (struct stack_t *, unsigned int);
 unsigned int search_end_for (struct stack_t *, unsigned int);
 unsigned int search_next_semicolon (struct stack_t *, unsigned int);
@@ -52,6 +53,7 @@ char *to_one_addr (struct stack_t *,
 
 bool_t isidentifier (char *);
 bool_t isdigit (char *);
+bool_t isuop (char *);
 void add_tab (struct buf_t *, unsigned int);
 
 char * sizeof_int (void);

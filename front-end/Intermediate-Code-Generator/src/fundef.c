@@ -144,6 +144,10 @@ fundef_gen (struct stack_t  * stk_decl,
     /* Here the function body begins */
     statements(stk_decl, new_stk_stmt, ct, decl_buf, stmt_buf, &vx, l, 0, new_stk_stmt->size, curr_indent + 1);
     stmt_buf->add(stmt_buf, "}\n");
+    for (size_t i = 0; i < (middle - (from + 3)) / 2; i++)
+    {
+        ct->rm_last(&ct);
+    }
 }
 
 struct fun_t *

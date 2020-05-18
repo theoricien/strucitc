@@ -12,6 +12,7 @@ init_crpcdt (void)
     tmp->be = NULL;
     tmp->next = NULL;
     tmp->add = _crpdct_add;
+    tmp->rm_last = _crpdct_rml;
     tmp->clone = _crpdct_clone;
 
     return tmp;
@@ -133,4 +134,15 @@ print_ct (struct crpdct_t *ct)
 		  tmp = tmp->next;
     }
     printf("----------------------\n");
+}
+
+void
+_crpdct_rml (struct crpdct_t ** ct)
+{
+    struct crpdct_t *tmp = *ct;
+    if (tmp->next == NULL)
+        *ct = NULL;
+    while (tmp->next->next != NULL)
+        tmp = tmp->next;
+    tmp->next = NULL;
 }
