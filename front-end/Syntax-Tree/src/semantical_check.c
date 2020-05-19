@@ -1028,6 +1028,102 @@ void all_check(node_t *tree, symbol_table *table, symbol_table* global_table, fu
   }
 }
 
+int multiple_declaration_tmp(symbol_table_block *block, symbol_table_block *global_block){
+  int errors = 0;
+  char *flag;
+  int res;
+  if(block != NULL){
+    declaration_list * dl = block->declarations;
+    if(dl != NULL){
+
+      if(dl->current != NULL){
+        if(dl->current->name != NULL){
+          res = is_already_redeclared(dl->current->name,block);
+          if(res > 1){
+            if(res == 2 && is_already_declared(dl->current->name,global_block)){
+            }
+            else{
+              printf("[Error] Multiples declaration of %s in block %s\n",dl->current->name,block->context);
+              errors++;
+            }
+          }
+        }
+      }
+      flag = dl->current->name;
+      if(dl->next != NULL){
+        struct declaration_list* tmp = dl->next;
+        if(tmp->current != NULL){
+          if(tmp->current->name != NULL){
+            res = is_already_redeclared(tmp->current->name,block);
+            if(res > 1){
+              if(res == 2 && is_already_declared(tmp->current->name,global_block)){
+                ;
+              }
+              else{
+                if(strcmp(flag,tmp->current->name) ){
+                  printf("[Error] Multiples declaration of %s in block %s\n",tmp->current->name,block->context);
+                  errors++;
+                  flag = tmp->current->name;
+                }
+              }
+            }
+          }
+        }
+        while(tmp->next != NULL){
+          tmp = tmp->next;
+          if(tmp->current->name != NULL){
+            res = is_already_redeclared(tmp->current->name,block);
+            if(res > 1){
+              if(res == 2 && is_already_declared(tmp->current->name,global_block)){
+                ;
+              }
+              else{
+                if(strcmp(flag,tmp->current->name)){
+                  printf("[Error] Multiples declaration of %s in block %s\n",tmp->current->name,block->context);
+                  errors++;
+                  flag = tmp->current->name;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return errors;
+}
+
+int check_multiple_declarations(symbol_table *table, symbol_table *global_table){
+
+  int errors = 0;
+
+  if(table->definition_block != NULL){
+      errors += multiple_declaration_tmp(table->definition_block,global_table->definition_block);
+  }
+
+  symbol_table *tmp = table;
+  while(tmp->next_symbol_table != NULL){
+    tmp = tmp->next_symbol_table;
+    if(tmp->definition_block != NULL){
+      errors += multiple_declaration_tmp(tmp->definition_block,global_table->definition_block);
+    }
+  }
+
+  //////////////////////////////////////////////////////
+  /*
+  if(table->definition_block != NULL){
+
+  }
+  symbol_table *tmp = table;
+  while(tmp->next_symbol_table != NULL){
+    tmp = tmp->next_symbol_table;
+    if(tmp->definition_block != NULL){
+      print_block(tmp->definition_block);
+    }
+  }*/
+  return errors;
+}
+
 
 void semantical_check(node_t *tree){
   all_tables *tables = build_symbol_table(tree);
@@ -1036,6 +1132,7 @@ void semantical_check(node_t *tree){
   print_symbol_table(table,0);
   printf("\n");
   function_arguments *fa = build_function_argument(TNULL);
+  //check_multiple_declarations(table,global_table);
   all_check(tree,table,global_table,fa);
   printf("\n\n");
   print_function_arguments(fa);

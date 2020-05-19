@@ -40,6 +40,10 @@ function_arguments *build_function_argument(type_spe);
 arguments *build_args();
 void print_function_arguments(function_arguments *);
 
+int multiple_declaration_tmp(symbol_table_block *, symbol_table_block *);
+int check_multiple_declarations(symbol_table *, symbol_table *);
+
+
 int count_function_arguments(node_t*, function_arguments *);
 int count_function_arguments_inter(node_t*,function_arguments*);
 int check_function_arguments_needed(node_t*,function_arguments*, symbol_table_block*);

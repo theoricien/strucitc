@@ -250,6 +250,36 @@ int is_already_declared(char *identifier, symbol_table_block *block){
   }
 }
 
+int is_already_redeclared(char *name, symbol_table_block *block){
+
+  declaration_list *declaration_list = block->declarations;
+  int count = 0;
+  if(block != NULL){
+    if(block->declarations != NULL){
+      if(declaration_list->current != NULL){
+        if(declaration_list->current->name != NULL){
+          if(!strcmp(name,declaration_list->current->name)){
+            count ++;
+          }
+        }
+      }
+      if(declaration_list->next != NULL){
+        struct declaration_list *tmp = declaration_list->next;
+        while(tmp != NULL && tmp->current != NULL){
+          if(tmp->current->name !=NULL){
+            if(!strcmp(name,tmp->current->name)){
+              count ++;
+            }
+            tmp = tmp->next;
+          }
+        }
+      }
+    }
+  }
+  return count;
+}
+
+
 type_spe get_variable_type(char *identifier, symbol_table_block *block){
   if(block->declarations != NULL){
     return get_type(identifier,block->declarations);

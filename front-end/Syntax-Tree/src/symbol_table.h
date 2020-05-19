@@ -45,6 +45,7 @@ declaration_list *clone_declaration_list(declaration_list *);
 // Operations on definitions within a symbol table block
 symbol_table_block *init_symbol_table_block();
 int is_already_declared(char*, symbol_table_block *);
+int is_already_redeclared(char *, symbol_table_block *);
 type_spe get_variable_type(char* , symbol_table_block *);
 void add_block_declaration(symbol_table_block *, decl *);
 symbol_table_block *clone_block(symbol_table_block *);

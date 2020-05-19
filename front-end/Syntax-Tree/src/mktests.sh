@@ -6,7 +6,7 @@ then
 	for file in $(ls ../tests/correct/)
 	do
 		success=$(./strucitfe ../tests/correct/$file 2>&1)
-		if [[ "$success" == *"segmentation"* ]]
+		if [[ "$success" == *"[Error]"* ]]
 		then
 			echo "-!--------------------!-"
 			echo $file
