@@ -9,7 +9,7 @@
  * Values: false: 0, true: 1
  */
 typedef enum {false, true} bool_t;
-typedef unsigned int size_t;
+//typedef unsigned int size_t;
 typedef char * v_t;
 
 

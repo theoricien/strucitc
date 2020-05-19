@@ -73,7 +73,7 @@ extern int yydebug;
     STRUCT = 279,
     IF = 280,
     ELSE = 281,
-    WHILE = 282,
+    WHILET = 282,
     FOR = 283,
     RETURN = 284
   };
@@ -84,7 +84,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 68 "structfe.y" /* yacc.c:1921  */
+#line 71 "structfe.y" /* yacc.c:1921  */
 
 	  char						* string;
 		struct stack_t 	* stk;

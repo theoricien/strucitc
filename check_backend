@@ -1,0 +1,8 @@
+#!/bin/bash
+if [[ "$@" == *"-h"* ]] || [[ "$@" == *"--help"* ]]
+then
+  echo -e "Usage: ./check_backend filename.be\n"
+  echo -e "-h --help: Display this message."
+else
+  ./backend/Syntax-Analyser/src/strucitbe $1
+fi

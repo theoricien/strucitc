@@ -131,7 +131,6 @@ statements (struct stack_t  * stk_decl,
             fundef_gen(stk_decl, stk_stmt, ct, i, middle, idx, v, l, decl_buf, stmt_buf, indent);
             fstmt->add(fstmt, "%s\n", decl_buf->string);
             fstmt->add(fstmt, "%s\n", stmt_buf->string);
-            print_ct(ct);
         }
         else if (!strcmp(type, "return"))
         {
@@ -163,7 +162,7 @@ statements (struct stack_t  * stk_decl,
             /* goto LX; L(X+1): { While Code } */
             while_gen(stk_decl, stk_stmt, ct, i, end_cond, idx, v, l, decl_buf, stmt_buf, indent);
             /* LX: if (condition) goto L(X+1);*/
-            arithmetic_gen(stk_decl, stk_stmt, ct, i, end_cond, decl_buf, stmt_buf, v, l, WHILE, indent);
+            arithmetic_gen(stk_decl, stk_stmt, ct, i + 1, end_cond, decl_buf, stmt_buf, v, l, WHILE, indent);
             //printf(decl_buf->string);
             //printf(stmt_buf->string);
 
@@ -357,7 +356,6 @@ arithmetic_gen (struct stack_t  * stk_decl,
 
     expr_type = stk_stmt->get(stk_stmt, from + 1)->value;
     variable_name = find_be_of(ct, stk_stmt->get(stk_stmt, from + 2)->value);
-    //print_ct(ct);
 
     if (!strcmp(expr_type, "="))
     {
@@ -790,7 +788,11 @@ arithmetic_gen (struct stack_t  * stk_decl,
             fprintf(stderr, "[!] Operator not recognized in the assignment expression: %s\n", assignement_type);
         }
     }
-    else if (!strcmp(expr_type, "==") ||
+    else if (!strcmp(expr_type, "+") ||
+             !strcmp(expr_type, "-") ||
+             !strcmp(expr_type, "*") ||
+             !strcmp(expr_type, "/") ||
+             !strcmp(expr_type, "==") ||
              !strcmp(expr_type, "!=") ||
              !strcmp(expr_type, "<=") ||
              !strcmp(expr_type, ">=") ||
@@ -1364,6 +1366,188 @@ to_one_addr (struct stack_t  * stk_decl,
         *to = end_right_operand;
 
         return uexpr;
+    }
+    else if (!strcmp(operand, "&&"))
+    {
+      unsigned int end_left_operand = 0;
+      unsigned int end_right_operand = 0;
+      char *left_operand;
+      char *right_operand;
+      char *uexpr;
+
+
+      //stk_stmt->print_stack(stk_stmt);
+      uexpr = vname;
+      if (isdigit(stk_stmt->get(stk_stmt, from + 1)->value))
+      {
+          end_left_operand = from + 2;
+          left_operand = strdup(stk_stmt->get(stk_stmt, from + 1)->value);
+      }
+      else if (isuop(stk_stmt->get(stk_stmt, from + 1)->value))
+      {
+          char *uop = stk_stmt->get(stk_stmt, from + 1)->value;
+          struct buf_t *buf = init_buf();
+          left_operand = find_be_of(ct, stk_stmt->get(stk_stmt, from + 1 + 1)->value);
+          buf->add(buf, "%c%s", uop[1], left_operand);
+          left_operand = buf->string;
+      }
+      else if (isidentifier(stk_stmt->get(stk_stmt, from + 1)->value))
+      {
+          end_left_operand = from + 2;
+          left_operand = find_be_of(ct, stk_stmt->get(stk_stmt, from + 1)->value);
+      }
+      else
+      {
+          struct mcell_t *left_cell_operand = init_mcell(0, vname);
+          left_cell_operand->value = (char *) malloc (strlen(vname) + 2);
+          strcpy(left_cell_operand->value, vname);
+          strcat(left_cell_operand->value, "l");
+          /* v0 -> v0l (=v0 left)*/
+          if (find_fe_of(ct, left_cell_operand->value) == NULL)
+          {
+            stk_decl->push(stk_decl, left_cell_operand->value);
+            stk_decl->push(stk_decl, "int");
+            stk_decl->push(stk_decl, "declaration");
+            ct->add(ct, left_cell_operand->value, left_cell_operand->value);
+            add_tab(fd, indent);
+            fd->add(fd, "int %s;\n", left_cell_operand->value);
+          }
+          left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 1, &end_left_operand, fd, fs, left_cell_operand->value, indent);
+      }
+
+      if (isdigit(stk_stmt->get(stk_stmt, end_left_operand)->value))
+      {
+          end_right_operand = end_left_operand + 1;
+          right_operand = strdup(stk_stmt->get(stk_stmt, end_left_operand)->value);
+      }
+      else if (isuop(stk_stmt->get(stk_stmt, end_left_operand)->value))
+      {
+          char *uop = stk_stmt->get(stk_stmt, end_left_operand)->value;
+          struct buf_t *buf = init_buf();
+          right_operand = find_be_of(ct, stk_stmt->get(stk_stmt, end_left_operand + 1)->value);
+          buf->add(buf, "%c%s", uop[1], right_operand);
+          right_operand = buf->string;
+      }
+      else if (isidentifier(stk_stmt->get(stk_stmt, end_left_operand)->value))
+      {
+          end_right_operand = end_left_operand + 1;
+          right_operand = find_be_of(ct, stk_stmt->get(stk_stmt, end_left_operand)->value);
+      }
+      else
+      {
+          struct mcell_t *right_cell_operand = init_mcell(0, vname);
+          right_cell_operand->value = (v_t) malloc (strlen(vname) + 2);
+          strcpy(right_cell_operand->value, vname);
+          strcat(right_cell_operand->value, "r");
+          /* v0 -> v0r (=v0 right)*/
+          if (find_fe_of(ct, right_cell_operand->value) == NULL)
+          {
+            stk_decl->push(stk_decl, right_cell_operand->value);
+            stk_decl->push(stk_decl, "int");
+            stk_decl->push(stk_decl, "declaration");
+            ct->add(ct, right_cell_operand->value, right_cell_operand->value);
+            add_tab(fd, indent);
+            fd->add(fd, "int %s;\n", right_cell_operand->value);
+          }
+          right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fd, fs, right_cell_operand->value, indent);
+      }
+
+      add_tab(fs, indent);
+      fs->add(fs, "%s = and(%s, %s);\n", uexpr, left_operand, right_operand);
+      *to = end_right_operand;
+
+      return uexpr;
+    }
+    else if (!strcmp(operand, "||"))
+    {
+      unsigned int end_left_operand = 0;
+      unsigned int end_right_operand = 0;
+      char *left_operand;
+      char *right_operand;
+      char *uexpr;
+
+
+      //stk_stmt->print_stack(stk_stmt);
+      uexpr = vname;
+      if (isdigit(stk_stmt->get(stk_stmt, from + 1)->value))
+      {
+          end_left_operand = from + 2;
+          left_operand = strdup(stk_stmt->get(stk_stmt, from + 1)->value);
+      }
+      else if (isuop(stk_stmt->get(stk_stmt, from + 1)->value))
+      {
+          char *uop = stk_stmt->get(stk_stmt, from + 1)->value;
+          struct buf_t *buf = init_buf();
+          left_operand = find_be_of(ct, stk_stmt->get(stk_stmt, from + 1 + 1)->value);
+          buf->add(buf, "%c%s", uop[1], left_operand);
+          left_operand = buf->string;
+      }
+      else if (isidentifier(stk_stmt->get(stk_stmt, from + 1)->value))
+      {
+          end_left_operand = from + 2;
+          left_operand = find_be_of(ct, stk_stmt->get(stk_stmt, from + 1)->value);
+      }
+      else
+      {
+          struct mcell_t *left_cell_operand = init_mcell(0, vname);
+          left_cell_operand->value = (char *) malloc (strlen(vname) + 2);
+          strcpy(left_cell_operand->value, vname);
+          strcat(left_cell_operand->value, "l");
+          /* v0 -> v0l (=v0 left)*/
+          if (find_fe_of(ct, left_cell_operand->value) == NULL)
+          {
+            stk_decl->push(stk_decl, left_cell_operand->value);
+            stk_decl->push(stk_decl, "int");
+            stk_decl->push(stk_decl, "declaration");
+            ct->add(ct, left_cell_operand->value, left_cell_operand->value);
+            add_tab(fd, indent);
+            fd->add(fd, "int %s;\n", left_cell_operand->value);
+          }
+          left_operand = to_one_addr(stk_decl, stk_stmt, ct, from + 1, &end_left_operand, fd, fs, left_cell_operand->value, indent);
+      }
+
+      if (isdigit(stk_stmt->get(stk_stmt, end_left_operand)->value))
+      {
+          end_right_operand = end_left_operand + 1;
+          right_operand = strdup(stk_stmt->get(stk_stmt, end_left_operand)->value);
+      }
+      else if (isuop(stk_stmt->get(stk_stmt, end_left_operand)->value))
+      {
+          char *uop = stk_stmt->get(stk_stmt, end_left_operand)->value;
+          struct buf_t *buf = init_buf();
+          right_operand = find_be_of(ct, stk_stmt->get(stk_stmt, end_left_operand + 1)->value);
+          buf->add(buf, "%c%s", uop[1], right_operand);
+          right_operand = buf->string;
+      }
+      else if (isidentifier(stk_stmt->get(stk_stmt, end_left_operand)->value))
+      {
+          end_right_operand = end_left_operand + 1;
+          right_operand = find_be_of(ct, stk_stmt->get(stk_stmt, end_left_operand)->value);
+      }
+      else
+      {
+          struct mcell_t *right_cell_operand = init_mcell(0, vname);
+          right_cell_operand->value = (v_t) malloc (strlen(vname) + 2);
+          strcpy(right_cell_operand->value, vname);
+          strcat(right_cell_operand->value, "r");
+          /* v0 -> v0r (=v0 right)*/
+          if (find_fe_of(ct, right_cell_operand->value) == NULL)
+          {
+            stk_decl->push(stk_decl, right_cell_operand->value);
+            stk_decl->push(stk_decl, "int");
+            stk_decl->push(stk_decl, "declaration");
+            ct->add(ct, right_cell_operand->value, right_cell_operand->value);
+            add_tab(fd, indent);
+            fd->add(fd, "int %s;\n", right_cell_operand->value);
+          }
+          right_operand = to_one_addr(stk_decl, stk_stmt, ct, end_left_operand, &end_right_operand, fd, fs, right_cell_operand->value, indent);
+      }
+
+      add_tab(fs, indent);
+      fs->add(fs, "%s = or(%s, %s);\n", uexpr, left_operand, right_operand);
+      *to = end_right_operand;
+
+      return uexpr;
     }
     else if (!strcmp(operand, "sizeof"))
     {

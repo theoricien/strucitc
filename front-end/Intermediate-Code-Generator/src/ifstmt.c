@@ -45,7 +45,7 @@ if_gen (struct stack_t  * far_stk_decl,
     //if_declaration(stk_decl);
 
     add_tab(decl_buf, curr_indent);
-    decl_buf->add(decl_buf, "{\n");
+    decl_buf->add(decl_buf, "{");
     //declaration(stk_decl, ct, decl_buf, &vx, curr_indent + 1);
 
     /* COMPOUND STATEMENT */

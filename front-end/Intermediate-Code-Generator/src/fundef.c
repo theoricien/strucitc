@@ -59,7 +59,7 @@ fundef_gen (struct stack_t  * stk_decl,
     /* Else it's void/int/(void *) */
 
     /* Writing to decl_buf */
-    decl_buf->add(decl_buf, "\n%s\n%s (", ot_ret, fun_name);
+    decl_buf->add(decl_buf, "%s\n%s (", ot_ret, fun_name);
     /* Adding arguments */
     for (size_t i = 0; i < middle - (from + 3); i += 2, ax++)
     {
@@ -123,6 +123,11 @@ fundef_gen (struct stack_t  * stk_decl,
             arg_stk_decl->push(arg_stk_decl, "void *");
             arg_stk_decl->push(arg_stk_decl, be_name);
             arg_stk_decl->push(arg_stk_decl, "declaration");
+        }
+        else if (!strcmp(type_backend, "void"))
+        {
+          decl_buf->add(decl_buf, "void");
+          break;
         }
         else
         {

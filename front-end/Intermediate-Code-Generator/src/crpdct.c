@@ -141,7 +141,10 @@ _crpdct_rml (struct crpdct_t ** ct)
 {
     struct crpdct_t *tmp = *ct;
     if (tmp->next == NULL)
-        *ct = NULL;
+    {
+        *ct = init_crpcdt();
+        return;
+    }
     while (tmp->next->next != NULL)
         tmp = tmp->next;
     tmp->next = NULL;

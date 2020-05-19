@@ -1,0 +1,29 @@
+#!/bin/bash
+if [[ "$@" == *"-h"* ]] || [[ "$@" == *"--help"* ]]
+then
+  echo -e "Disclaimer: The output strucit-backend file is named a.be\n"
+  echo -e "Usage: ./strucitc filename.c [OPTIONS]\n"
+  echo -e "-h --help: Display this message."
+  echo -e "-a --abstract-syntax-tree: Display the Abstract Syntax Tree (AST)."
+  echo -e "-s --symbol-table: Display the Symbol Table (ST)."
+  echo -e "-i --intermediate-stack: Display the stack of the Intermediate Code Generator (ICG) for the statements and the global declarations."
+else
+  ast="0"
+  st="0"
+  if [[ "$@" == *"-a"* ]] || [[ "$@" == *"--abstract-syntax-tree"* ]]
+  then
+    $ast="1"
+  fi
+  if [[ "$@" == *"-s"* ]] || [[ "$@" == *"--symbol-table"* ]]
+  then
+    $st="1"
+  fi
+  ./frontend/Syntax-Tree/src/strucitfe "$1" "$ast" "$st"
+
+  if [[ "$@" == *"-i"* ]] || [[ "$@" == *"--intermediate-stack"* ]]
+  then
+    ./frontend/Intermediate-Code-Generator/src/strucitfe "$1" "X"
+  else
+    ./frontend/Intermediate-Code-Generator/src/strucitfe "$1"
+  fi
+fi

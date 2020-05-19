@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "y.tab.h"
 #include <errno.h>
-int verbose = 1;
+int verbose = 0;
 
 void log (char *msg)
 {
@@ -27,15 +27,13 @@ COMMENTAIRE_POLY        [\/][*][^*]*[*]+([^*\/][^*]*[*]+)*[\/]
 {COMMENTAIRE_POLY}      ;
 
 "extern"                {log(yytext);yylval.string = strdup(yytext);return EXTERN;}
-"struct"                {log(yytext);yylval.string = strdup(yytext);return STRUCT;}
 "if"                    {log(yytext);yylval.string = strdup(yytext);return IF;}
 "else"                  {log(yytext);yylval.string = strdup(yytext);return ELSE;}
-"while"                 {log(yytext);yylval.string = strdup(yytext);return WHILE;}
+"while"                 {log(yytext);yylval.string = strdup(yytext);return WHILET;}
 "for"                   {log(yytext);yylval.string = strdup(yytext);return FOR;}
 "int"                   {log(yytext);yylval.string = strdup(yytext);return INT;}
 "void"                  {log(yytext);yylval.string = strdup(yytext);return VOID;}
 "return"                {log(yytext);yylval.string = strdup(yytext);return RETURN;}
-"sizeof"                {log(yytext);yylval.string = strdup(yytext);return SIZEOF;}
 
 {L}({L}|{D})*           {log(yytext);yylval.string = strdup(yytext);return IDENTIFIER;}
 
@@ -43,22 +41,12 @@ COMMENTAIRE_POLY        [\/][*][^*]*[*]+([^*\/][^*]*[*]+)*[\/]
 
 L?\"(\\.|[^\\"])*\"	    {log(yytext);yylval.string = strdup(yytext);return(STRING_LITERAL);}
 
-"+="                    {log(yytext);yylval.string = strdup(yytext);return(ADD_ASSIGN); }
-"-="                    {log(yytext);yylval.string = strdup(yytext);return(SUB_ASSIGN); }
-"*="                    {log(yytext);yylval.string = strdup(yytext);return(MUL_ASSIGN); }
-"/="                    {log(yytext);yylval.string = strdup(yytext);return(DIV_ASSIGN); }
-
 "<="                    {log(yytext);yylval.string = strdup(yytext);return LE_OP;}
 ">="                    {log(yytext);yylval.string = strdup(yytext);return GE_OP;}
 ">"                     {log(yytext);yylval.string = strdup(yytext);return G_OP;}
 "<"                     {log(yytext);yylval.string = strdup(yytext);return L_OP;}
 "=="                    {log(yytext);yylval.string = strdup(yytext);return EQ_OP;}
 "!="                    {log(yytext);yylval.string = strdup(yytext);return NE_OP;}
-
-"->"                    {log(yytext);yylval.string = strdup(yytext);return PTR_OP;}
-
-"&&"                    {log(yytext);yylval.string = strdup(yytext);return AND_OP;}
-"||"                    {log(yytext);yylval.string = strdup(yytext);return OR_OP;}
 
 ";"                     {log(&yytext[0]); return(';'); }
 "{"                     {log(&yytext[0]); return('{'); }
@@ -69,7 +57,6 @@ L?\"(\\.|[^\\"])*\"	    {log(yytext);yylval.string = strdup(yytext);return(STRIN
 "("                     {log(&yytext[0]); return('('); }
 ")"                     {log(&yytext[0]); return(')'); }
 "&"                     {log(&yytext[0]); return('&'); }
-"~"                     {log(&yytext[0]); return('~'); }
 "-"                     {log(&yytext[0]); return('-'); }
 "+"                     {log(&yytext[0]); return('+'); }
 "*"                     {log(&yytext[0]); return('*'); }

@@ -1,6 +1,11 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+
+extern char yytext[];
+int printed = 0;
+void yyerror(char const *s);
+int yylex();
 %}
 
 %token IDENTIFIER CONSTANT
