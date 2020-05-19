@@ -11,7 +11,7 @@ make install
 ```
 ## How to use
 ```
-cd sources
 make
-./strucitfe
+./strucitc myfile.c -a -i -s
+./check_backend a.be
 ```
