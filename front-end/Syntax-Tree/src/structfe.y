@@ -122,12 +122,12 @@ unary_expression
 
     | SIZEOF '(' unary_expression ')'
     {log2("unary_expression -> SIZEOF ( unary_expression)");
-    $$ = build_uopr($1,$3);
+    $$ = build_uopr("sizeof",$3);
     }
 
     | SIZEOF '(' type_name ')'
     {log2("unary_expression -> SIZEOF ( type_name )");
-    $$ = build_uopr($1,$3);
+    $$ = build_uopr("sizeof",$3);
     }
     ;
 
@@ -281,10 +281,6 @@ declaration
     : declaration_specifiers init_declarator_list ';'
     {log2("declaration -> declaration_specifiers init_declarator_list ';'");
     $$ = build_opr("declaration",$1,$2);}
-
-    | declaration_specifiers ';'
-    {log2("declaration -> declaration_specifiers ';'");
-    $$ = build_opr("declaration",$1,NULL);}
     ;
 
 declaration_specifiers
@@ -638,7 +634,6 @@ program
 _start
 	:program
 	{stringify($1,0);
-	//build_symbol_table($1);
 	semantical_check($1);}
 
 

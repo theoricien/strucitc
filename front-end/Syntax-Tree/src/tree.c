@@ -115,6 +115,16 @@ node_t *build_func(node_t *func_name, node_t *arguments){
   struct node_t *tmp = (struct node_t *)malloc(sizeof (struct node_t));
   assert (tmp != NULL);
 
+  char* new_name;
+  int flag = 0;
+
+  if(func_name->type != TID){
+    if(func_name->type == TUOP){
+      new_name = (char*)malloc(strlen(func_name->uopr->operand->leaf->value));
+      flag = 1;
+    }
+  }
+
   //assert(func_name->type == TCONS || func_name->type == TID);
   tmp->type = TFUNC;
 
@@ -229,10 +239,18 @@ void stringify(node_t * tree, int tab){
   }
   else if(tree->type == TFOR){
     printf("(%s :\n","TFOR");
-    stringify(tree->for_loop->start_statement, tab + 4);
-    stringify(tree->for_loop->end_statement, tab + 4);
-    stringify(tree->for_loop->forward_expression, tab + 4);
-    stringify(tree->for_loop->do_statement, tab + 4);
+    if(tree->for_loop->start_statement != NULL){
+      stringify(tree->for_loop->start_statement, tab + 4);
+    }
+    if(tree->for_loop->end_statement != NULL){
+      stringify(tree->for_loop->end_statement, tab + 4);
+    }
+    if(tree->for_loop->forward_expression != NULL){
+      stringify(tree->for_loop->forward_expression, tab + 4);
+    }
+    if(tree->for_loop->do_statement){
+      stringify(tree->for_loop->do_statement, tab + 4);
+    }
     print_tab(tab);
     printf(")\n");
   }

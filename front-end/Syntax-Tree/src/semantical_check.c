@@ -12,30 +12,36 @@ int semantical_check_on_function_declaration_block(node_t *tree, symbol_table_bl
   int errors = 0;
 
   if(tree->type == TOP){
-
     if(tree->leaf->value != NULL){
       if(!strcmp(tree->leaf->value,"void")){
         ;
       }
       else{
-        if(tree->opr->left->type == TOP){
+        if(tree->opr->left->type == TOP && !strcmp(tree->opr->optype,"function_definition")){
           if(!strcmp(tree->opr->left->opr->optype, "function")){
-            add_all_arg_count(tree->opr->left->opr->right,get_type_parameter_declaration(tree->opr->left->opr->left),fa);
+            if(tree->opr->left->opr->left->type == TID){
+              add_all_arg_count(tree->opr->left->opr->right,get_type_parameter_declaration(tree->opr->left->opr->left,block),fa,block);
+              semantical_check_on_function_declaration_block(tree->opr->right,block,global_block,fa);
+            }
+            else if(tree->opr->left->opr->left->type == TUOP){
+              add_all_arg_count(tree->opr->left->opr->right,get_type_parameter_declaration(tree->opr->left->opr->left->uopr->operand,block),fa,block);
+              semantical_check_on_function_declaration_block(tree->opr->right,block,global_block,fa);
+            }
           }
         }
 
-        if(!strcmp(tree->opr->optype, "=")){
+        else if(!strcmp(tree->opr->optype, "=")){
           errors = errors + semantical_check_on_function_declaration_block(tree->opr->left,block,global_block,fa);
           errors = errors + semantical_check_on_function_declaration_block(tree->opr->right,block,global_block,fa);
           errors = errors + check_equal_assignment(tree,block,global_block,fa);
         }
         else if(!strcmp(tree->opr->optype,"declaration")){
           errors = errors + semantical_check_on_declaration(tree,block,global_block,fa);
-        }
+        }/*
         else if(!strcmp(tree->opr->optype, "function_definition")){
           errors = errors + semantical_check_on_function_declaration_block(tree->opr->left,block,global_block,fa);
           errors = errors + semantical_check_on_function_declaration_block(tree->opr->right,block,global_block,fa);
-        }
+        }*/
         else if(!strcmp(tree->opr->optype, "function")){
           errors = errors + semantical_check_on_function_declaration_block(tree->opr->right,block,global_block,fa);
         }
@@ -56,9 +62,9 @@ int semantical_check_on_function_declaration_block(node_t *tree, symbol_table_bl
     }
   }
   else if(tree->type == TFUNC){
+    errors = errors + check_function_arguments_needed(tree,fa,block);
     errors = errors + semantical_check_on_function_declaration_block(tree->function->arguments,block,global_block,fa);
   }
-
   return errors;
 }
 
@@ -72,9 +78,34 @@ int semantical_check_on_declaration(node_t *tree, symbol_table_block *block, sym
   declaration_list *declaration_list = block->declarations;
   int errors = 0;
 
+  if(tree->opr->left->type == TSTRUCT){
+    // structs are not handeled
+    return 0;
+  }
+
   if(tree->opr->left->type == TID){
     if(!strcmp(tree->opr->left->leaf->value,"void")){
-      printf("[Error] Cannot have a variable of type VOID\n");
+      if(tree->opr->right->type == TUOP){
+        if(!strcmp(tree->opr->right->uopr->optype,"pointer_direct_declarator")){
+          ;
+        }else{
+          printf("[Error] Cannot have a variable of type VOID\n");
+        }
+      }
+      else if(tree->opr->right->type == TFUNC){
+        if(tree->opr->right->function->name->type == TUOP){
+          if(!strcmp(tree->opr->right->function->name->uopr->optype,"pointer_direct_declarator")){
+            ;
+          }else{
+            printf("[Error] Cannot have a variable of type VOID\n");
+          }
+        }else{
+          printf("[Error] Cannot have a variable of type VOID\n");
+        }
+      }
+      else{
+        printf("[Error] Cannot have a variable of type VOID\n");
+      }
       errors ++;
     }
   }
@@ -204,24 +235,24 @@ int check_arithmetical_expression(node_t *tree,symbol_table_block *block, functi
     return;
   }
   if(tree->opr->left->type == TID){
-    if(is_already_declared(tree->opr->left->leaf->value,declaration_list) == 0){
+    if(is_already_declared(tree->opr->left->leaf->value,block) == 0){
       printf("[Error] : undeclared variable: %s in block %s\n",tree->opr->left->leaf->value,block->context);
       errors++;
     }
     else{
-      if(get_variable_type(tree->opr->left->leaf->value,declaration_list) != TINT){
-        printf("[Error] : cannot make arithmetic operations on VOID \n");
+      if(get_variable_type(tree->opr->left->leaf->value,block) != TINT){
+        printf("[Error] : cannot make arithmetic operations on VOID : %s \n",tree->opr->left->leaf->value);
         errors++;
       }
     }
   }else if(tree->opr->right->type == TID){
-    if(is_already_declared(tree->opr->right->leaf->value,declaration_list) == 0){
+    if(is_already_declared(tree->opr->right->leaf->value,block) == 0){
       printf("[Error] : undeclared variable: %s in block %s\n",tree->opr->right->leaf->value,block->context);
       errors++;
     }
     else{
-      if(get_variable_type(tree->opr->right->leaf->value,declaration_list) != TINT){
-        printf("[Error] : cannot make arithmetic operations on VOID \n");
+      if(get_variable_type(tree->opr->right->leaf->value,block) != TINT){
+        printf("[Error] : cannot make arithmetic operations on VOID : %s \n",tree->opr->right->leaf->value);
         errors++;
       }
     }
@@ -253,13 +284,14 @@ int check_equal_assignment(node_t *tree, symbol_table_block *block, symbol_table
   if(tree->opr->right->type == TFUNC){
       ;//TODO
   }else if(tree->opr->left->type == TID){
-    if(!is_already_declared(tree->opr->left->leaf->value,declaration_list)){
+    if(!is_already_declared(tree->opr->left->leaf->value,block)){
+      //printf("\n%s , %s , %d \n",tree->opr->left->leaf->value,declaration_list->current->name,is_already_declared(tree->opr->left->leaf->value,declaration_list));
       printf("[Error] : %s is not declared in block %s\n",tree->opr->left->leaf->value,block->context);
       errors++;
     }
     if(get_type_node(tree->opr->left,block) != get_type_node(tree->opr->right,block)){
       if(get_type_node(tree->opr->left,block) == TINT){
-        if(get_type_node(tree->opr->right,block) != TINT){
+        if(get_type_node(tree->opr->right,block) != TINT || get_type_node(tree->opr->right,block) != FINT){
           if(get_type_node(tree->opr->right,block) == PTRINT){
             printf("[Warning] : make int from pointer without a cast\n",tree->opr->left->leaf->value);
           }
@@ -288,6 +320,9 @@ int check_equal_assignment(node_t *tree, symbol_table_block *block, symbol_table
     printf("[Error]: cannot assign a value to %s\n",tree->opr->left->leaf->value);
     errors++;
   }
+  else if(tree->opr->left->type == TOP){
+    semantical_check_on_function_declaration_block(tree->opr->left,block,global_block,fa);
+  }
 
   if(tree->opr->right->type == TCONS){
     if((tree->opr->right->leaf->value[0] == '\"') || (tree->opr->right->leaf->value[0] == '\'')){
@@ -306,15 +341,29 @@ int check_equal_assignment(node_t *tree, symbol_table_block *block, symbol_table
 type_spe get_type_node(node_t *tree, symbol_table_block *block){
 
   if(tree->type == TOP){
-    if(get_type_node(tree->opr->left,block) == get_type_node(tree->opr->right,block)){
-      return get_type_node(tree->opr->left,block);
+    type_spe lt = get_type_node(tree->opr->left,block);
+    type_spe rt = get_type_node(tree->opr->right,block);
+    if(lt == rt){
+      return lt;
     }
     else{
+      if(lt == TINT && rt == FINT || lt == TINT && rt == PTRINT){
+        return lt;
+      }
+      else if(lt == FINT == rt == TINT || lt == FINT && rt == PTRINT){
+        return rt;
+      }
       return TNULL;
     }
   }
   else if(tree->type == TID){
-    if(is_already_declared(tree->leaf->value,block)){
+    if(!strcmp(tree->leaf->value,"int")){
+      return TINT;
+    }
+    else if(!strcmp(tree->leaf->value,"void")){
+      return TVOID;
+    }
+    else if(is_already_declared(tree->leaf->value,block)){
       return TINT;
     }
     else{
@@ -328,9 +377,18 @@ type_spe get_type_node(node_t *tree, symbol_table_block *block){
     return TINT;
   }
   else if(tree->type == TFUNC){
-    if(is_already_declared(tree->function->name,block)){
-      if(block->declarations != NULL){
-        return get_type(tree->function->name,block->declarations);
+    if(tree->function->name->type == TID){
+      if(is_already_declared(tree->function->name->leaf->value,block)){
+        if(block->declarations != NULL){
+          return get_type(tree->function->name->leaf->value,block->declarations);
+        }
+      }
+    }
+    else if(tree->function->name->type == TUOP){
+      if(is_already_declared(tree->function->name->uopr->operand->leaf->value,block)){
+        if(block->declarations != NULL){
+          return get_type(tree->function->name->uopr->operand->leaf->value,block->declarations);
+        }
       }
     }
   }
@@ -342,6 +400,9 @@ type_spe get_type_node(node_t *tree, symbol_table_block *block){
       else{
         return PTRVOID;
       }
+    }
+    else if(tree->uopr->operand->type == TID || tree->uopr->operand->type == TCONS){
+      return get_type_node(tree->uopr->operand,block);
     }
     else if(!strcmp(tree->uopr->optype,"pointer_direct_declarator")){
       if(get_type_node(tree->uopr->operand,block) == TINT){
@@ -356,10 +417,16 @@ type_spe get_type_node(node_t *tree, symbol_table_block *block){
 }
 
 
-type_spe get_type_parameter_declaration(node_t *tree){
+type_spe get_type_parameter_declaration(node_t *tree, symbol_table_block *block){
+
   if(tree->type == TID){
     if(!strcmp(tree->leaf->value,"int")){
       return TINT;
+    }
+    else if(is_already_declared(tree->leaf->value,block)){
+      return get_variable_type(tree->leaf->value,block);
+    }else{
+      return TNULL;
     }
   }else if(tree->type == TUOP){
     if(!strcmp(tree->uopr->optype,"pointer_direct_declarator")){
@@ -407,38 +474,79 @@ type_spe get_type_parameter_declaration(node_t *tree){
 * Function to call when you find a TFUNC in declaration
 * We suppose that tree is of type TFUNC
 */
-void add_all_arg_count(node_t *tree, type_spe type, function_arguments *fa){
+void add_all_arg_count(node_t *tree, type_spe type, function_arguments *fa, symbol_table_block *block){
 
   if(tree->type != TFUNC){
     return;
   }
-  char *fname = tree->function->name->leaf->value;
+  char *fname;
+  if(tree->function->name->type == TID){
+    fname = tree->function->name->leaf->value;
+  }
+  else if(tree->function->name->type == TUOP){
+    fname = tree->function->name->uopr->operand->leaf->value;
+  }
+
+
+  if(type == TINT){
+    if(find_function_in_fa(fname,fa) != NULL){
+      ;
+    }else{
+      type_spe t = get_variable_type(fname,block);
+      type = t;
+    }
+  }
+  else if(type == TVOID){
+    if(find_function_in_fa(fname,fa) != NULL){
+      ;
+    }else{
+      type_spe t = get_variable_type(fname,block);
+      type = t;
+    }
+  }
+
   add_one_arg_count(fname,type,fa);
+  function_arguments *tmp_fa = fa;
+
+
+
+  while(strcmp(tmp_fa->name,fname) || (tmp_fa->type != type)){
+    tmp_fa = tmp_fa->next;
+    if(tmp_fa->name == NULL){
+      break;
+    }
+  }
+
 
   if(tree->function->arguments->type = TOP){
     if(!strcmp(tree->function->arguments->opr->optype,"parameter_declaration")){
       node_t *type_char = tree->function->arguments->opr->left->leaf;
-      add_fun_arg(get_declaration_name(tree->function->arguments),get_type_parameter_declaration(type_char),fa);
+      add_fun_arg(get_declaration_name(tree->function->arguments),get_type_parameter_declaration(type_char,block),tmp_fa);
     }
     else if(!strcmp(tree->function->arguments->opr->optype,"parameter_list")){
-      add_all_arg_inter(tree->function->arguments->opr->left,fname,fa);
-      add_all_arg_inter(tree->function->arguments->opr->right,fname,fa);
+      add_all_arg_inter(tree->function->arguments->opr->left,fname,tmp_fa,block);
+      add_all_arg_inter(tree->function->arguments->opr->right,fname,tmp_fa,block);
     }
   }
 }
 
-void add_all_arg_inter(node_t* tree, char* name, function_arguments* fa){
+void add_all_arg_inter(node_t* tree, char* name, function_arguments* fa, symbol_table_block *block){
 
   if(tree->type != TOP){
     return;
   }
   if(tree->type = TOP){
     if(!strcmp(tree->opr->optype,"parameter_declaration")){
-      add_fun_arg(get_declaration_name(tree),get_type_parameter_declaration(tree->opr->left->leaf),fa);
+      if(tree->opr->right->type != TUOP){
+        add_fun_arg(get_declaration_name(tree),get_type_parameter_declaration(tree->opr->left,block),fa);
+      }
+      else{
+        add_fun_arg(get_declaration_name(tree),get_type_parameter_declaration(tree,block),fa);
+      }
     }
     else if(!strcmp(tree->function->arguments->opr->optype,"parameter_list")){
-      add_all_arg_inter(tree->opr->left,name,fa);
-      add_all_arg_inter(tree->opr->right,name,fa);
+      add_all_arg_inter(tree->opr->left,name,fa,block);
+      add_all_arg_inter(tree->opr->right,name,fa,block);
     }
   }
 }
@@ -450,7 +558,24 @@ void add_all_arg_inter(node_t* tree, char* name, function_arguments* fa){
 void add_one_arg_count(char *name, type_spe type, function_arguments *fa){
   function_arguments *tmp_fa = find_function_in_fa(name,fa);
   if(tmp_fa != NULL){
-    printf("[Error]: Redefining function %s within a same range\n",name);
+    if(tmp_fa->type != PROTOINT && tmp_fa->type != PROTOVOID){
+      printf("[Error]: Redefining function %s within a same range\n",name);
+    }
+    else{
+      tmp_fa = fa;
+      while (tmp_fa->next != NULL) {
+        if(tmp_fa->name != NULL){
+          tmp_fa = tmp_fa->next;
+        }else{
+          break;
+        }
+      }
+      tmp_fa->next = build_function_argument(TNULL);
+      tmp_fa->name = (char*)malloc(strlen(name)+1);
+      strcpy(tmp_fa->name,name);
+      tmp_fa->nb = 0;
+      tmp_fa->type = type;
+    }
   }
   else{
     tmp_fa = fa;
@@ -528,6 +653,26 @@ arguments *find_arg_in_function(char* name, arguments* args){
 }
 
 /*
+* Returns TNULL if there are no args at position
+*/
+type_spe find_nth_arg_type_in_function(arguments *args, int position){
+  arguments *tmp_args = args;
+  for (int i = 1; i <= position; i++) {
+    if(tmp_args->next != NULL){
+      tmp_args = tmp_args->next;
+    }else{
+      return TNULL;
+    }
+  }
+  if(tmp_args->name != NULL){
+    return tmp_args->type;
+  }
+  else{
+    return TNULL;
+  }
+}
+
+/*
 * Called when on a TOP: parameter_declaration
 */
 char* get_declaration_name(node_t *tree){
@@ -594,9 +739,206 @@ arguments *build_args(){
   return a;
 }
 
-int count_function_arguments(char *func_name, function_arguments *fa){
+/*
+* Supposed to be called on a TFUNC tree
+* Count the arguments on a func call
+*/
+int count_function_arguments(node_t *tree, function_arguments *fa){
 
+  if(tree->function->arguments->type == TID || tree->function->arguments->type == TCONS){
+    if(tree->function->arguments->type == TID){
+      if(!strcmp(tree->function->arguments->leaf->value,"void")){
+        return 0;
+      }
+    }
+    return 1;
+  }
+  else if(tree->function->arguments->type == TOP){
+    if(!strcmp(tree->function->arguments->opr->optype,"argument_expression_list")){
+      return count_function_arguments_inter(tree->function->arguments,fa);
+    }
+    else{
+      char* t = tree->function->arguments->opr->optype;
+      if(!strcmp(t,"+") || !strcmp(t,"*") || !strcmp(t,"-") || !strcmp(t,"/")){
+        return 1;
+      }
+    }
+  }
   return 0;
+}
+
+int count_function_arguments_inter(node_t *tree, function_arguments *fa){
+
+  int count = 0;
+
+  if(tree->type != TOP){
+    return count;
+  }
+  if(tree->opr->left->type == TOP){
+    if(!strcmp(tree->opr->left->opr->optype,"argument_expression_list")){
+      count = count + count_function_arguments_inter(tree->opr->left->opr->optype,fa);
+    }
+    else{
+      char* t = tree->opr->left->opr->optype;
+      if(!strcmp(t,"+") || !strcmp(t,"*") || !strcmp(t,"-") || !strcmp(t,"/")){
+        return 1;
+      }
+    }
+  }
+  if(tree->opr->right->type == TOP){
+    if(!strcmp(tree->opr->right->opr->optype,"argument_expression_list")){
+      count = count + count_function_arguments_inter(tree->opr->right->opr->optype,fa);
+    }
+    else{
+      char* t = tree->opr->right->opr->optype;
+      if(!strcmp(t,"+") || !strcmp(t,"*") || !strcmp(t,"-") || !strcmp(t,"/")){
+        return 1;
+      }
+    }
+  }
+
+  if(tree->opr->left->type == TID || tree->opr->left->type == TCONS){
+    count = count + 1;
+  }
+  if(tree->opr->right->type == TID || tree->opr->right->type == TCONS){
+    count = count + 1;
+  }
+  return count;
+}
+
+
+int check_type_of_arguments(node_t *tree, function_arguments *fa,symbol_table_block *block){
+
+  int errors = 0;
+  int arg_count = 1;
+
+  if(tree->type != TFUNC){
+    return -1;
+  }
+
+  char* fname = tree->function->name->leaf->value;
+  arguments *function_arguments = find_function_in_fa(fname,fa)->args;
+
+  if(tree->function->arguments->type == TID){
+    if(find_nth_arg_type_in_function(function_arguments,1) != TNULL){
+      if(find_nth_arg_type_in_function(function_arguments,1) == get_type_parameter_declaration(tree->function->arguments,block)){
+        return 0;
+      }else{
+        printf("[Error]: incompatible types for argument %d in function %s\n",1,fname);
+        errors++;
+      }
+    }
+  }
+  else if(tree->function->arguments->type == TCONS){
+    if(find_nth_arg_type_in_function(function_arguments,1) != TNULL){
+      if(find_nth_arg_type_in_function(function_arguments,1) == TINT){
+        return 0;
+      }else{
+        printf("[Error]: incompatible types for argument %d in function %s\n",1,fname);
+        errors++;
+      }
+    }
+  }
+  else if(tree->function->arguments->type == TOP){
+    if(!strcmp(tree->function->arguments->opr->optype,"argument_expression_list")){
+      errors = errors + check_type_of_arguments_inter(tree->function->arguments,fa,&arg_count,fname,block);
+    }
+  }
+  return errors;
+
+}
+
+int check_type_of_arguments_inter(node_t *tree, function_arguments *fa, int *count, char* fname, symbol_table_block *block){
+
+  int errors = 0;
+  if(tree->type != TOP){
+    return -1;
+  }
+
+  if(tree->opr->left->type == TOP){
+    if(!strcmp(tree->opr->left->opr->optype,"argument_expression_list")){
+      errors = errors + check_type_of_arguments_inter(tree->opr->left,fa,count,fname,block);
+    }
+  }
+  if(tree->opr->right->type == TOP){
+    if(!strcmp(tree->opr->right->opr->optype,"argument_expression_list")){
+      errors = errors + check_type_of_arguments_inter(tree->opr->right,fa,count,fname,block);
+    }
+  }
+
+  if(tree->opr->left->type == TID){
+    if(find_nth_arg_type_in_function(fa,*count) != TNULL){
+      if(find_nth_arg_type_in_function(fa,*count) == get_type_parameter_declaration(tree->opr->left,block)){
+        return 0;
+      }else{
+        printf("[Error]: incompatible types for argument %d in function %s\n",*count,fname);
+        errors++;
+      }
+    }
+    *count = *count + 1;
+  }
+  if(tree->opr->left->type == TCONS){
+    if(find_nth_arg_type_in_function(fa,*count) != TNULL){
+      if(find_nth_arg_type_in_function(fa,*count) == TINT){
+        return 0;
+      }else{
+        printf("[Error]: incompatible types for argument %d in function %s\n",*count,fname);
+        errors++;
+      }
+    }
+    *count = *count + 1;
+  }
+
+  if(tree->opr->right->type == TID){
+
+    if(find_nth_arg_type_in_function(fa,*count) != TNULL){
+      if(find_nth_arg_type_in_function(fa,*count) == get_type_parameter_declaration(tree->opr->right,block)){
+        return 0;
+      }else{
+        printf("[Error]: incompatible types for argument %d in function %s\n",*count,fname);
+        errors++;
+      }
+    }
+    *count = *count + 1;
+  }
+
+  if(tree->opr->right->type == TCONS){
+    if(find_nth_arg_type_in_function(fa,*count) != TNULL){
+      if(find_nth_arg_type_in_function(fa,*count) == TINT){
+        return 0;
+      }else{
+        printf("[Error]: incompatible types for argument %d in function %s\n",*count,fname);
+        errors++;
+      }
+    }
+    *count = *count + 1;
+  }
+
+}
+
+/*
+* Check semantical elements on a function call
+* Tree is supposed to be a TFUNC
+*/
+
+int check_function_arguments_needed(node_t *tree, function_arguments *fa, symbol_table_block *block){
+  int errors = 0;
+  char *fname = tree->function->name->leaf->value;
+  function_arguments *tmp = find_function_in_fa(fname,fa);
+  if(tmp == NULL){
+    return 0;
+  }
+  if(count_function_arguments(tree,fa) > tmp->nb){
+    printf("[Error]: Too much arguments for function %s call \n",fname);
+    errors++;
+  }
+  else if(count_function_arguments(tree,fa) < tmp->nb){
+    printf("[Error]: Too few arguments for function %s call \n",fname);
+    errors ++;
+  }
+
+  errors = errors + check_type_of_arguments(tree,fa,block);
+  return errors;
 }
 
 void print_function_arguments(function_arguments *fa){
@@ -629,7 +971,9 @@ void print_function_arguments(function_arguments *fa){
 
 void all_check(node_t *tree, symbol_table *table, symbol_table* global_table, function_arguments* fa){
 
+
   int errors = 0;
+  symbol_table_block *block = table->definition_block;
   symbol_table_block *global_block = global_table->definition_block;
 
   if((tree->type == TID) || (tree->type == TCONS)){
@@ -674,6 +1018,7 @@ void all_check(node_t *tree, symbol_table *table, symbol_table* global_table, fu
   }
   else{
     if(tree->type == TFUNC){
+      errors = errors + check_function_arguments_needed(tree,fa,block);
       all_check(tree->function->name,table,global_table,fa);
       all_check(tree->function->arguments,table,global_table,fa);
     }
@@ -688,7 +1033,7 @@ void semantical_check(node_t *tree){
   all_tables *tables = build_symbol_table(tree);
   symbol_table *table = tables->table;
   symbol_table *global_table = tables->global_table;
-  print_symbol_table(global_table,0);
+  print_symbol_table(table,0);
   printf("\n");
   function_arguments *fa = build_function_argument(TNULL);
   all_check(tree,table,global_table,fa);

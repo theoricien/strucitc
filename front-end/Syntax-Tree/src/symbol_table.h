@@ -64,5 +64,10 @@ void construct_table(node_t *, symbol_table *, symbol_table *, symbol_table *);
 
 void case_global_declaration_in_construct_table(node_t *, symbol_table *);
 void case_program_in_construct_table(node_t *, symbol_table *, symbol_table *, symbol_table *);
+void case_init_declarator_list(node_t *, symbol_table *, symbol_table *,type_spe*);
+void case_init_global_declarator_list(node_t *, symbol_table *,type_spe*);
+void case_tfunc_in_declaration(node_t*,symbol_table*,symbol_table*,type_spe*);
+void case_global_tfunc_in_declaration(node_t *,symbol_table *, type_spe *);
+
 
 #endif

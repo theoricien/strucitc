@@ -2,20 +2,31 @@
 if [ -f "strucitfe" ]
 then
 	echo "--- CORRECT TESTS ---"
+	success=""
 	for file in $(ls ../tests/correct/)
 	do
-		echo "-----------------------"
-		echo $file
-		./strucitfe ../tests/correct/$file
+		success=$(./strucitfe ../tests/correct/$file 2>&1)
+		if [[ "$success" == *"segmentation"* ]]
+		then
+			echo "-!--------------------!-"
+			echo $file
+		fi
+		success=""
 	done
+	echo "Success."
 	echo "--- INCORRECT TESTS ---"
-
-        for file in $(ls ../tests/incorrect/)
-        do
-                echo "-----------------------"
-                echo $file
-                ./strucitfe ../tests/incorrect/$file
-        done
-        echo "-----------------------"
+	success=""
+	for file in $(ls ../tests/incorrect/)
+  do
+		success=$(./strucitfe ../tests/incorrect/$file 2>&1)
+		if [[ "$success" == *"segmentation"* ]]
+		then
+			echo "-!--------------------!-"
+			echo $file
+			echo $file
+		fi
+		success=""
+  done
+	echo "Success."
+	echo "-----------------------"
 fi
-

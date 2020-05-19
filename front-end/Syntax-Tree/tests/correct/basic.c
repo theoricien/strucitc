@@ -10,9 +10,10 @@ int foo(int x, int* y){
 }
 
 int func(){
-  int foo = 2;
+  /*int foo = 2;*/
   /*foo(1,2); TODO*/
-  a = foo(1);
+  /*a = foo(1);*/
+  foo(1,2);
   /* TODO si aucun return */
   /*TODO IF ET FOR*/
 
@@ -20,8 +21,8 @@ int func(){
 
 int main() {
     int j;
-    int z = foo(1,2);
-    z = func();
+    /*int z = foo(1,2);*/
+    /*z = func();*/
 
 }
 /* DONE

@@ -4,7 +4,7 @@
 // types : constant, identifers, operators, unary operator, statement, declarator type, type types, if,
 //for loop, return, function, struct
 typedef enum {TCONS, TID, TOP, TUOP, TS, TD, TT, TIF, TFOR, TRET, TFUNC, TSTRUCT} type_t;
-typedef enum {TINT,TVOID,TNULL,PTRINT,PTRVOID,FINT,FVOID} type_spe;
+typedef enum {TINT,TVOID,TNULL,PTRINT,PTRVOID,FINT,FVOID,PROTOINT,PROTOVOID} type_spe;
 /// Un noeud pour chaque type:
 
 //constantes et identifiers

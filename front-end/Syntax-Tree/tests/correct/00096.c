@@ -1,4 +1,4 @@
-int x, x = 3, x;
+int* x = 1 + 2, y = 3, z;
 
 int
 main()
@@ -9,4 +9,3 @@ main()
 	x = 0;
 	return x;
 }
-

@@ -121,7 +121,6 @@ void get_nth_line (FILE *file, int n, char **s)
         {
             char *l = malloc(1024);
             int j = 0;
-            printf("%d\n",l[j]);
             strcpy(l,line);
             while(l[j] == '\t'){
               j++;
