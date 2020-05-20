@@ -29,3 +29,4 @@ back-end/Syntax-Analyser/src/y.tab.c
 back-end/Syntax-Analyser/src/y.tab.c
 back-end/Syntax-Analyser/src/lex.yy.c
 a.be
+front-end/Intermediate-Code-Generator/src/strucitfe
