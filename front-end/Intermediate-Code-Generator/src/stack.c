@@ -126,8 +126,7 @@ push (struct stack_t * stk,
 	  char           * fmt,
 	  ...)
 {
-    struct buf_t *buf = init_buf();
-
+  struct buf_t *buf = init_buf();
 	assert(stk != NULL, "NULL stack_t passed as argument");
 
 	va_list arg;

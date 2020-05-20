@@ -30,6 +30,7 @@ COMMENTAIRE_POLY        [\/][*][^*]*[*]+([^*\/][^*]*[*]+)*[\/]
 "int"                   {log("int");return INT;}
 "void"                  {log("void");return VOID;}
 "return"                {log("return");return RETURN;}
+"goto"                  {log("goto");return GOTO;}
 
 {L}({L}|{D})*           {log("IDENTIFIER");return IDENTIFIER;}
 
@@ -48,6 +49,7 @@ COMMENTAIRE_POLY        [\/][*][^*]*[*]+([^*\/][^*]*[*]+)*[\/]
 ","                     {log(&yytext[0]); return(','); }
 "="                     {log(&yytext[0]); return('='); }
 "("                     {log(&yytext[0]); return('('); }
+":"                     {log(&yytext[0]); return(':'); }
 ")"                     {log(&yytext[0]); return(')'); }
 "&"                     {log(&yytext[0]); return('&'); }
 "-"                     {log(&yytext[0]); return('-'); }

@@ -8,6 +8,8 @@ void yyerror(char const *s);
 int yylex();
 %}
 
+%define parse.error verbose
+
 %token IDENTIFIER CONSTANT
 %token LE_OP GE_OP EQ_OP NE_OP L_OP G_OP
 %token EXTERN
@@ -90,11 +92,6 @@ type_specifier
         | INT
         ;
 
-argument_types
-        : VOID '*'
-        | INT
-        ;
-
 declarator
         : '*' direct_declarator
         | direct_declarator
@@ -103,6 +100,7 @@ declarator
 direct_declarator
         : IDENTIFIER
         | direct_declarator '(' parameter_list ')'
+        | direct_declarator '(' VOID ')'
         | direct_declarator '(' ')'
         ;
 

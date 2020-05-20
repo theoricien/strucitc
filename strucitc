@@ -8,22 +8,22 @@ then
   echo -e "-s --symbol-table: Display the Symbol Table (ST)."
   echo -e "-i --intermediate-stack: Display the stack of the Intermediate Code Generator (ICG) for the statements and the global declarations."
 else
-  ast="0"
-  st="0"
+  ast=0
+  st=0
   if [[ "$@" == *"-a"* ]] || [[ "$@" == *"--abstract-syntax-tree"* ]]
   then
-    $ast="1"
+    ast=1
   fi
   if [[ "$@" == *"-s"* ]] || [[ "$@" == *"--symbol-table"* ]]
   then
-    $st="1"
+    st=1
   fi
-  ./frontend/Syntax-Tree/src/strucitfe "$1" "$ast" "$st"
+  ./front-end/Syntax-Tree/src/strucitfe "$1" $ast $st
 
   if [[ "$@" == *"-i"* ]] || [[ "$@" == *"--intermediate-stack"* ]]
   then
-    ./frontend/Intermediate-Code-Generator/src/strucitfe "$1" "X"
+    ./front-end/Intermediate-Code-Generator/src/strucitfe "$1" "X"
   else
-    ./frontend/Intermediate-Code-Generator/src/strucitfe "$1"
+    ./front-end/Intermediate-Code-Generator/src/strucitfe "$1"
   fi
 fi

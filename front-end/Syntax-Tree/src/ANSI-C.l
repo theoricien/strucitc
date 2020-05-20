@@ -14,8 +14,6 @@ void log (char *msg)
     if (verbose)
         printf("%s", msg);
 }
-/* Ne gere pas les commentaires. A rajouter */
-/* Supprimer les lignes dont vous n'avez pas besoin. */
 
 %}
 
@@ -44,16 +42,7 @@ COMMENTAIRE_POLY        [\/][*][^*]*[*]+([^*\/][^*]*[*]+)*[\/]
 
 {L}({L}|{D})*           {count();log(yytext);yylval.string = strdup(yytext);return IDENTIFIER;}
 
-0{D}+{IS}?              {count();log(yytext);yylval.string = strdup(yytext);return CONSTANT;}
 {D}+{IS}?               {count();log(yytext);yylval.string = strdup(yytext);return CONSTANT;}
-L?'(\\.|[^\\'])+'       {count();log(yytext);yylval.string = strdup(yytext);return CONSTANT;}
-
-L?\"(\\.|[^\\"])*\"	    {count();log(yytext);yylval.string = strdup(yytext);return(STRING_LITERAL);}
-
-"+="                    {count();log(yytext);yylval.string = strdup(yytext);return(ADD_ASSIGN); }
-"-="                    {count();log(yytext);yylval.string = strdup(yytext);return(SUB_ASSIGN); }
-"*="                    {count();log(yytext);yylval.string = strdup(yytext);return(MUL_ASSIGN); }
-"/="                    {count();log(yytext);yylval.string = strdup(yytext);return(DIV_ASSIGN); }
 
 "<="                    {count();log(yytext);yylval.string = strdup(yytext);return LE_OP;}
 ">="                    {count();log(yytext);yylval.string = strdup(yytext);return GE_OP;}
@@ -88,7 +77,34 @@ L?\"(\\.|[^\\"])*\"	    {count();log(yytext);yylval.string = strdup(yytext);retu
 "\n"                    {count();log("\n");}
 "\f"                    {count();log("\f");}
 "\r"                    {count();log("\r");}
-.                       {return yytext[0];}
+
+0[xX]{H}+{IS}?          { yyerror("Invalid Lexic: Hexadecimal numbers unauthorized."); exit(2); }
+0{D}+{IS}?              { yyerror("Invalid Lexic: Octal numbers unauthorized."); exit(2); }
+L?'(\\.|[^\\'])+'       { yyerror("Invalid Lexic: Chars unauthorized."); exit(2); }
+
+{D}+{E}{FS}?            { yyerror("Invalid Lexic: Big integer unauthorized."); exit(2); }
+{D}*"."{D}+({E})?{FS}?  { yyerror("Invalid Lexic: Float numbers unauthorized."); exit(2); }
+{D}+"."{D}*({E})?{FS}?  { yyerror("Invalid Lexic: Float numbers unauthorized."); exit(2); }
+
+L?\"(\\.|[^\\"])*\"     { yyerror("Invalid Lexic: String literals unauthorized."); exit(2); }
+
+"..."                   { yyerror("Invalid Lexic: Ellipsis operator unauthorized."); exit(2); }
+">>="                   { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"<<="                   { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"+="                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"-="                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"*="                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"/="                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"%="                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"&="                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"^="                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"|="                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+">>"                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"<<"                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"++"                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+"--"                    { yyerror("Invalid Lexic: Operator unauthorized."); exit(2); }
+
+.                       { yyerror("Invalid Lexic."); exit(2); }
 %%
 
 void count()
@@ -121,6 +137,7 @@ void get_nth_line (FILE *file, int n, char **s)
         {
             char *l = malloc(1024);
             int j = 0;
+            printf("%d\n",l[j]);
             strcpy(l,line);
             while(l[j] == '\t'){
               j++;

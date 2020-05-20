@@ -17,7 +17,8 @@ typedef enum {EXPRESSION,
               CONDITION,
               IFEXPR,
               IFELSE,
-              WHILE}
+              WHILE,
+              RET}
         arithmetic_t;
 
 struct buf_t

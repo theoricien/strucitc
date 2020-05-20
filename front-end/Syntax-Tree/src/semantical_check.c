@@ -1129,11 +1129,8 @@ void semantical_check(node_t *tree){
   all_tables *tables = build_symbol_table(tree);
   symbol_table *table = tables->table;
   symbol_table *global_table = tables->global_table;
-  print_symbol_table(table,0);
-  printf("\n");
   function_arguments *fa = build_function_argument(TNULL);
   //check_multiple_declarations(table,global_table);
   all_check(tree,table,global_table,fa);
-  printf("\n\n");
-  print_function_arguments(fa);
+  //print_function_arguments(fa);
 }

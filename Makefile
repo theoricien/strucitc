@@ -6,6 +6,8 @@ all:
 	@chmod +x front-end/Intermediate-Code-Generator//src/strucitfe
 	@chmod +x back-end/Syntax-Analyser/src/strucitbe
 	@chmod +x welcome.sh
+	@chmod +x strucitc
+	@chmod +x check_backend
 	@./welcome.sh
 
 clean:

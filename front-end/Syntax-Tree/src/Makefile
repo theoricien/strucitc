@@ -10,16 +10,13 @@ strucitfe: lex.yy.c y.tab
 lex.yy.c:
 	@flex ANSI-C.l
 
-y.tab: tree.o
+y.tab:
 	@bison -v -g -d structfe.y
 	@mv structfe.tab.h y.tab.h
 	@mv structfe.tab.c y.tab.c
 
-tree.o:
-	@$(CC) -c tree.c
-
 clean:
-	@rm y.tab.c lex.yy.c strucitfe tree.o
+	@rm y.tab.c lex.yy.c strucitfe
 
 tests:
 	@chmod +x ./mktests.sh

@@ -77,14 +77,12 @@ variable_declaration (struct stack_t     * stk_decl,
 
     if (!strcmp(type, "int"))
     {
-        sprintf(vvar, "v%d", vx);
         of->add(of, "%s %s;\n", type, vvar);
         ct->add(ct, stk_decl->get(stk_decl, i)->value, vvar);
     }
     else
     {
-        sprintf(vvar, "v%d", vx);
-        of->add(of, "void *%s;\n", type, vvar);
+        of->add(of, "void *%s;\n", vvar);
         ct->add(ct, stk_decl->get(stk_decl, i)->value, vvar);
     }
 

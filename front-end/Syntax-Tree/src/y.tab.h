@@ -84,7 +84,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 25 "structfe.y" /* yacc.c:1921  */
+#line 32 "structfe.y" /* yacc.c:1921  */
 
 	  node_t *	node;
 	  char *		string;

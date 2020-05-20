@@ -51,6 +51,16 @@ char *to_one_addr (struct stack_t *,
                    char *,
                    unsigned int);
 
+char *get_fun_args (struct stack_t *,
+                   struct stack_t *,
+                   struct crpdct_t *,
+                   unsigned int,
+                   unsigned int,
+                   struct buf_t *,
+                   struct buf_t *,
+                   char *,
+                   unsigned int);
+
 bool_t isidentifier (char *);
 bool_t isdigit (char *);
 bool_t isuop (char *);

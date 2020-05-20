@@ -7,6 +7,5 @@ foo(int a, int b)
 int
 main()
 {
-	return foo(1, 3);
+	return foo(1 + 2, 3);
 }
-

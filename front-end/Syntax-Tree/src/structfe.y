@@ -2,6 +2,13 @@
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include "tree.h"
+	#include "semantical_check.h"
+	#include "symbol_table.h"
+	#include <assert.h>
+	#include <string.h>
+
+	int ast = '0';
+	int st = '0';
 
 	int verbose2 = 0;
 	int line_count = 1;
@@ -72,10 +79,6 @@ primary_expression
 
     | CONSTANT
     {log2("primary_expression -> CONSTANT");
-    $$ = build_leaf(TCONS, $1);}
-
-    | STRING_LITERAL
-    {log2("primary_expression -> STRING_LITERAL");
     $$ = build_leaf(TCONS, $1);}
 
     | '(' expression ')'
@@ -149,10 +152,6 @@ cast_expression
     : unary_expression
     {log2("cast_expression -> unary_expression");
     $$ = $1;}
-
-    | '(' type_name ')' cast_expression
-		{log2("cast_expression -> '(' type_name ')' cast_expression");
-    $$ = build_opr("cast",$2,$4);}
   	;
 
 multiplicative_expression
@@ -261,10 +260,6 @@ if_expression
 
 assignment_operator
     : '='					{log2("assignment_operator -> ="); $$ = "=";}
-    | MUL_ASSIGN 	{log2("assignment_operator -> MUL_ASSIGN"); $$ = $1;}
-    | DIV_ASSIGN 	{log2("assignment_operator -> DIV_ASSIGN"); $$ = $1;}
-    | ADD_ASSIGN 	{log2("assignment_operator -> ADD_ASSIGN"); $$ = $1;}
-    | SUB_ASSIGN 	{log2("assignment_operator -> SUB_ASSIGN"); $$ = $1;}
     ;
 
 expression
@@ -281,6 +276,10 @@ declaration
     : declaration_specifiers init_declarator_list ';'
     {log2("declaration -> declaration_specifiers init_declarator_list ';'");
     $$ = build_opr("declaration",$1,$2);}
+
+		| declaration_specifiers ';'
+    {log2("declaration -> declaration_specifiers ';'");
+    $$ = build_opr("declaration",$1,NULL);}
     ;
 
 declaration_specifiers
@@ -633,7 +632,10 @@ program
 
 _start
 	:program
-	{stringify($1,0);
+	{if (ast == '1') {stringify($1,0);}
+	all_tables *tables = build_symbol_table($1);
+	symbol_table *table = tables->table;
+	if (st == '1') {print_symbol_table(table,0);}
 	semantical_check($1);}
 
 
@@ -685,6 +687,9 @@ yyerror (char const *s)
 int
 main (int argc, char *argv[])
 {
+	ast = argv[2][0];
+	st = argv[3][0];
+
 	fname = strdup(argv[1]);
 	if ((yyin = fopen(argv[1], "r")) == NULL)
 	{

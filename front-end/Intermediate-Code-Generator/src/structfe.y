@@ -169,6 +169,7 @@
 %type <stk> abstract_declarator_with_pointer
 %type <stk> direct_abstract_declarator
 %type <stk> direct_abstract_declarator_pointer_free
+%type <stk> argument_expression_list
 
 %start _start
 %%
@@ -185,26 +186,33 @@ primary_expression
 			$$ = tmp;}
 
     | '(' expression ')'
-		{ $$ = $2;}
+		{ struct stack_t *tmp = init_stack();
+			tmp->push_stack(tmp, $2);
+			tmp->push(tmp, ";");
+			$$ = tmp;}
     ;
 
 postfix_expression
     : primary_expression
 		{$$ = $1;}
 
-/* To implement
     | postfix_expression '(' ')'
-		{ struct buf_t *buf = init_buf();
-			struct stack_t *tmp = init_stack();
-			buf->add(buf, "%s()", $1->get($1, 0));
-			tmp->push(tmp, buf->string);
+		{ struct stack_t *tmp = init_stack();
+			tmp->push(tmp, "funcall");
+			tmp->push_stack(tmp, $1);
+			tmp->push(tmp, "noarg");
+			tmp->push(tmp, "endfuncall");
 			$$ = tmp;}
 
     | postfix_expression '(' argument_expression_list ')'
-		{struct buf_t *tmp = init_buf();
-			tmp->add(tmp, "%s(args)", $1->get($1, 0));
+		{ struct stack_t *tmp = init_stack();
+			tmp->push(tmp, "funcall");
+			tmp->push_stack(tmp, $1);
+			tmp->push(tmp, "args");
+			tmp->push_stack(tmp, $3);
+			tmp->push(tmp, "endfuncall");
 			$$ = tmp;}
-
+/*
     | postfix_expression PTR_OP IDENTIFIER
 		{struct buf_t *tmp = init_buf();
 			tmp->add(tmp, "%s->%s", $1, $3);
@@ -213,8 +221,14 @@ postfix_expression
 
 argument_expression_list
     : assignment_expression
+		{ $$ = $1; }
 
     | argument_expression_list ',' assignment_expression
+		{ struct stack_t *tmp = init_stack();
+			tmp->push_stack(tmp, $1);
+			tmp->push(tmp, ",");
+			tmp->push_stack(tmp, $3);
+			$$ = tmp;}
     ;
 
 unary_expression
@@ -427,6 +441,7 @@ declarations
 				 stk->push(stk, ids->get(ids, i)->value);
 				 stk->push(stk, "declaration");
 			}
+			//decl->push_stack(decl, stk);
 			$$ = stk;}
     ;
 
@@ -708,6 +723,13 @@ function_definer
 			stk->push(stk, $1);
 			stk->push_stack(stk, $3);
 			$$ = stk;}
+
+		/* foo () -> foo (void) */
+		| IDENTIFIER '(' ')'
+		{ struct stack_t *stk = init_stack();
+			stk->push(stk, $1);
+			stk->push(stk, "void");
+			$$ = stk;}
 		;
 
 function_parameter_list
@@ -852,6 +874,7 @@ statement
     : compound_statement
 
     | expression_statement
+		{stmt->push_stack(stmt, $1);}
 
     | selection_statement
 
@@ -890,11 +913,13 @@ block_item
 
 expression_statement
     : ';'
-		{$$ = stmt;}
+		{ struct stack_t *stk = init_stack();
+			$$ = stk;}
     | expression ';'
-		{ stmt->push_stack(stmt, $1);
-			stmt->push(stmt, ";");
-	    $$ = stmt;}
+		{ struct stack_t *stk = init_stack();
+			stk->push_stack(stk, $1);
+			stk->push(stk, ";");
+			$$ = stk;}
     ;
 
 selection_statement
@@ -926,7 +951,7 @@ iteration_statement
     | FOR '(' expression_statement expression_statement ')'
 		{stmt->push(stmt, "for");
 		stmt->push_stack(stmt, $3);
-		stmt->push(stmt, "endecl");
+		stmt->push(stmt, "enddecl");
 		stmt->push_stack(stmt, $4);
 		stmt->push(stmt, "endcond");
 		stmt->push(stmt, "endstep");}
@@ -938,7 +963,7 @@ iteration_statement
 		| FOR '(' expression_statement expression_statement expression ')'
 		{stmt->push(stmt, "for");
 		stmt->push_stack(stmt, $3);
-		stmt->push(stmt, "endecl");
+		stmt->push(stmt, "enddecl");
 		stmt->push_stack(stmt, $4);
 		stmt->push(stmt, "endcond");
 		stmt->push_stack(stmt, $5);
@@ -950,7 +975,7 @@ iteration_statement
     // for (int i = 0, j, k; expression; )
     | FOR '(' declarations expression_statement ')'
 		{stmt->push(stmt, "for");
-		stmt->push(stmt, "endecl");
+		stmt->push(stmt, "enddecl");
 		stmt->push_stack(stmt, $4);
 		stmt->push(stmt, "endcond");
 		stmt->push(stmt, "endstep");}
@@ -961,7 +986,7 @@ iteration_statement
     // for (int i = 0, j, k; expression; expression)
 		| FOR '(' declarations expression_statement expression ')'
 		{stmt->push(stmt, "for");
-		stmt->push(stmt, "endecl");
+		stmt->push(stmt, "enddecl");
 		stmt->push_stack(stmt, $4);
 		stmt->push(stmt, "endcond");
 		stmt->push_stack(stmt, $5);
@@ -1078,7 +1103,7 @@ main (int argc, char *argv[])
 		}
 
 		fbe = fopen("a.be", "w+");
-		fprintf(stdout, "%s%s", buf_decl->string, buf_stmt->string);
+		fprintf(fbe, "%s%s", buf_decl->string, buf_stmt->string);
 		fclose(fbe);
 		printf("Success.\n");
 	}
