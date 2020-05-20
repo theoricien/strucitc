@@ -1,0 +1,27 @@
+Une fois dans le dossier racine du mini compilateur, si vous n’avez pas les logiciels prérequis d’installés sur votre machine (flex et bison), il vous suffit de taper la commande suivante :
+	make install
+
+Si vous voulez compiler le projet, il vous suffit d’exécuter la commande suivante :
+	make
+
+Un message en français devrait apparaitre sur l’organisation des fichiers si la commande réussie.
+Enfin, si vous désirer re-compiler le projet, exécutez ces commandes :
+	make clean; make
+
+Pour exécuter le mini-compilateur (aka traducteur), vous avez le fichier « strucitc » à la racine. Il s’agit d’un mini script bash permettant de simplifier le lancement du logiciel. Vous avez le même principe avec le logiciel « check_backend » qui s’occupe de la vérification back-end.
+
+Comme énoncé dans le rapport, il se peut que le GIC renvoie des Signal Segmentation Fault ou des problèmes de grammaires.
+
+strucitc:
+  A savoir: Le fichier de sorti en langage strucit-backend est nommé a.be
+  Utilisation: ./strucitc filename.c [OPTIONS]
+  -h --help: Affiche ce message
+  -a --abstract-syntax-tree: Affiche l'arbre syntaxique abstrait (ASA).
+  -s --symbol-table: Affiche la table des symboles (TS).
+  -i --intermediate-stack: Affiche la pile du Générateur Intermédiaire de Code (GIC) pour les statements et les déclarations globales.
+  Renvoie "Success." si le test a réussi
+
+check_backend:
+  Utilisation: ./check_backend filename.be
+  -h --help: Affiche ce message
+  Renvoie "Success." si le test a réussi
